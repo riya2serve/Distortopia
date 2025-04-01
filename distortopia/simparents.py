@@ -16,7 +16,9 @@ With these, the user can then simulate an F1 hybrid VCF. If SNPs differ, the F1 
 if SNPs are identical the F1 gets homozygous (1/1 OR 0/0).
 """
 
-genome_fasta = "spinach_genome/spinach_wg.fasta" #edit this
+genome_fasta = "spinach_genome/spinach_wg.fasta"
+#consider providing 2 reference fastas for cases where samples are v divergent?
+#divergent cases might have different reference files
 
 output_folder = "spinach_genome" #edit this
 os.makedirs(output_folder, exist_ok = True) #checks that output folder exists
@@ -35,14 +37,14 @@ def simulate_snps(fasta_file, snp_count, output_vcf):
     print(f"[INFO] Loaded genome: {tot_nome_length:,} bp across {len(sequences)} chromosomes")
 
     # Generate random SNP positions
-    snp_positions = random.sample(range(1, tot_nome_length), snp_count)
-    snp_positions.sort()
+    snp_positions = random.sample(range(1, tot_nome_length), snp_count) #randomly sample snps across entire ___ length
+    snp_positions.sort() #sort snp positions 
 
     # Store SNPs per chromosome
     snps_on_chrom = {} #this is a dictionary for storing the SNPs on each chromsome
     genome_cursor = 0 #position on genome; initializing at zero
 
-    for seq in sequences: #this for loop iterates through each chromosome
+    for seq in sequences: #this for-loop iterates through each chromosome
         chrom = seq.id #name of the chromosome
         chrom_length = len(seq)
         chrom_snps = [] #an empty list to store the SNPs found on a chromsome
