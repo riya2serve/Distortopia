@@ -16,9 +16,9 @@ With these, the user can then simulate an F1 hybrid VCF. If SNPs differ, the F1 
 if SNPs are identical the F1 gets homozygous (1/1 OR 0/0).
 """
 
-genome_fasta = "spinach_genome/spinach_wg.fasta"
+genome_fasta = "spinach_genome/spinach_wg.fasta" #edit this
 
-output_folder = "spinach_genome"
+output_folder = "spinach_genome" #edit this
 os.makedirs(output_folder, exist_ok = True) #checks that output folder exists
 
 # ================
