@@ -12,7 +12,7 @@ The project is designed to be general-purpose: any organism with variant data in
 
 The user will provide:
 - Two parent genotype files in VCF format (`parent1.vcf`, `parent2.vcf`)
-- A reference genome or chromosome assembly in FASTA format
+- Reference genomes or chromosome assemblies in FASTA format
 - *(Optional)* A real (or simulated) F1 VCF file from which to directly analyze segregation distortion
 
 Command-line arguments will allow users to toggle with the simulation and analysis steps.
