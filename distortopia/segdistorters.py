@@ -14,11 +14,26 @@ def detect(args, csv = False):
         if abs(obs_ratio - exp_ratio) > args.threshold:
             distorted.append(variant)
         if csv:
-            obs_exp["obs"].append(obs_ratio)
-            obs_exp["exp"].append(exp_ratio) #Appending ratios to the dictionary
+            obs_exp["obs"].append(obs_ratio) #ratio of observed variants
+            obs_exp["exp"].append(exp_ratio) #ratio of expected variants 
+    #Appending ratios to the dictionary
 
-    if csv:
-        df_obs_exp = pd.DataFrame([obs_exp])
-        df_obs_exp.to_csv("obs_exp.csv", index = False) #Writing the ratios to a csv
+"""Emily suggestion: 
+ If you change the default to None rather than False, and change 
+ if csv to if type(csv) is str, then you can have the user specify the name of the resulting CSV 
+ file instead of the default name I gave it.
+"""
+    if type(csv) is str:
+        df_obs_exp = pd.DataFrame([obs_exp]) #naming the Pandas dataframe; edit so user can name 
+        df_obs_exp.to_csv("obs_exp.csv", index = False) #writing the dataframe w/ ratios to a csv; edit so user can name
 
-    write_results(distorted, output=args.output)
+    write_results(distorted, output=args.output) #output is a CSV
+
+"""Emily suggestion: 
+ Write a function to plot the distorted regions, beginning with one 
+ default plot. Later, it can be built out with different options 
+ for different types of plots.
+"""
+
+def plot_detect(args,): #new function to plot the distorted regions
+ #TO BE BUILT OUT 
