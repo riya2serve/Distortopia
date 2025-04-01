@@ -13,8 +13,8 @@ def main():
     args = parser.parse_args()
 
     if args.simulate_f1:
-        __simf1poly__.run_simulation(args)
-    elif args.detect_distortion:
+        __simf1poly__.run_simulation(args) #will either simulate hybrids
+    elif args.detect_distortion: #otherwise will detect distortions
         __segdistorters__.detect(args)
 
 if __name__ == "__main__":
