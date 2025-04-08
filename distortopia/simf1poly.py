@@ -18,3 +18,5 @@ def run_simulation(args):
         f1_hybrid[variant] = f"{allele1}/{allele2}"
 
     write_vcf(f1_hybrid, output=args.output) #consider making this output a CSV?  
+
+#propbabiltiy of croosover on each chormosome
