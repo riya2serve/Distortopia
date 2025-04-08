@@ -35,10 +35,11 @@ def fetch_fasta(assembly_name, accession):
         assemblies (string): NCBI genome assembly accession IDs
         output_folder (string): directory where FASTA files will be stored
     """
-     acc_path = "/".join([accession[i:i+3] for i in range(0, len(accession), 3)]) 
-     #breaking accession into chunks of characters bc that is how NCBI organizes the FTP directory
-     full_path = f"{BASE_PATH}/{acc_path}/{accession}"
-     #exact FTP folder when NCBI is storing the genome assembly 
+
+    acc_path = "/".join([accession[i:i+3] for i in range(0, len(accession), 3)]) 
+    #breaking accession into chunks of characters bc that is how NCBI organizes the FTP directory
+    full_path = f"{BASE_PATH}/{acc_path}/{accession}"
+    #exact FTP folder when NCBI is storing the genome assembly 
 
     print(f"[INFO] Fetching {assemblies}. . .")
 
