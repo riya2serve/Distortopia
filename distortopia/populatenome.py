@@ -30,6 +30,8 @@ def fetch_fasta(assembly_name, accession):
     """
     This function will fetch FASTA files from NCBI.
     Each FASTA will be saved locally (default: current user director)
+
+    #fetches fasta each time; change to make that optional to user
     
     parameters:
         assemblies (string): NCBI genome assembly accession IDs
@@ -69,7 +71,7 @@ def fetch_fasta(assembly_name, accession):
 # ==============
 if __name__ == "__main__":
     for name, acc in assemblies.items():
-        download_genome_files(name, acc)
+        fetch_fasta(name, acc) #this is not defined?
 
     print("[COMPLETE] Finished downloading all genomes.")
 
