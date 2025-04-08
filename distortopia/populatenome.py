@@ -68,10 +68,10 @@ def fetch_fasta(assembly_name, accession):
 # FETCH CHROMS
 # ==============
 if __name__ == "__main__":
-    for acc_id in accession_ids:
-        fetch_fasta(acc_id, output_folder)
+    for name, acc in assemblies.items():
+        download_genome_files(name, acc)
 
-    print("[COMPLETE] Finished downloading all chromosomes.")
+    print("[COMPLETE] Finished downloading all genomes.")
 
 """
 ==================================
