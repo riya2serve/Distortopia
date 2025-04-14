@@ -1,2 +1,10 @@
 # Ignore egg metadata
 *.egg-info/
+
+# Ignore downloaded genome files
+user-data/
+*.fna.gz
+*.gff.gz
+*.fasta
+*.fna
+*.gff
