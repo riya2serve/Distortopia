@@ -1,33 +1,67 @@
 import os 
+import argparse
 from ftplib import FTP
-import gzip #for FASTA and GFF file decompression 
-from Bio import SeqIO #BioPython for NCBI access and FASTA parsing
-import pandas as pd #for dataframe handling (not necessary)
+import gzip #useful for FASTA and GFF file decompression later on 
+from Bio import Entrez #for NCBI access
+from Bio import SeqIO #to parse through FASTA files later on
 
 # ================
 # CONFIGURATION
 # ================
 
-FTP_HOST = "ftp.ncbi.nlm.nih.gov"
-BASE_PATH = "/genomes/all"
-
-#Step 1. list genome assembly accessions
-assemblies = {
-    "A_retroflexus": "JBEFNP000000000", #(data made available by Raieymo et al. 2025)
-    "A_hybridus": "JBEL0C000000000" #(data made available by Raieymo et al. 2025)
-}
-
-#Step 2. define output directory to store the downloaded FASTA files
-output_folder = "user-data"
-#creates the directory if it doesn't exist already
-os.makedirs(output_folder, exist_ok = True)
+Entrez.email = "rr3491@columbia.edu" #required by NCBI 
 
 # ================
 # MY FUNCTIONS
 # ================
 
-def fetch_fasta(assembly_name, accession):
+#get species input from user via terminal:
+def get_species():
+    species_dict = {}
+    print("Enter plant species name to search on NCBI (e.g. 'Amaranthus retrofleuxs'). Type 'done' to finish.")
+
+    while True:
+        species = input("Species name (or 'done'): ").strip()
+        if species.lower() == "done":
+            break
+        species_dict[species] = None #for accessions 
+    return species_dict 
+
+#use Entrez module to fetch genome assembly accession from NCBI
+def get_assembly(species_name):
     """
+    Get lastest assembly accessions for each given species name.
+    """
+    try:
+        handle = Entrez.esearch(db = "assembly", term = species_name + "[Organism]", retmax = 1, sort = "relevance")
+        record = Entrez.read(handle)
+        handle.close()
+        if not record["IdList"]:
+            print(f"[ERROR] No assemblies found for {species_name}")
+            return None
+
+    uid = record["IdList"][0]
+
+    handle = Entrez.esummary(db="assembly", id=uid)
+    summary = Entrez.read(handle)
+    handle.close()
+
+    doc = summary['DocumentSummarySet']['DocumentSummary'][0]
+    acc = doc['AssemblyAccession']
+    print(f"[INFO] Found assembly accession {acc} for {species_name}")
+    return acc.replace("GCF_", "").replace("GCA_", "")  # NCBI FTP path format
+except Exception as e:
+    print(f"[ERROR] Failed to fetch accession for {species_name}: {e}")
+    return None
+
+#download FASTA and GFF from NCBI's FTP:
+
+FTP_HOST = "ftp.ncbi.nlm.nih.gov"
+BASE_PATH = "/genomes/all"
+output_folder = "user-data"
+os.makedirs(output_folder, exist_ok=True) #creates the directory if it doesn't exist already
+
+ """
     This function will fetch FASTA files from NCBI.
     Each FASTA will be saved locally (default: current user director)
 
@@ -36,12 +70,12 @@ def fetch_fasta(assembly_name, accession):
     parameters:
         assemblies (string): NCBI genome assembly accession IDs
         output_folder (string): directory where FASTA files will be stored
-    """
+"""
 
-    acc_path = "/".join([accession[i:i+3] for i in range(0, len(accession), 3)]) 
+def fetch_fasta(species_name, accession, force_download = False):
+    acc_path = "/".join([accession[i:i+3] for i in range(0, len(accession), 3)])
     #breaking accession into chunks of characters bc that is how NCBI organizes the FTP directory
-    full_path = f"{BASE_PATH}/{acc_path}/{accession}"
-    #exact FTP folder when NCBI is storing the genome assembly 
+    full_path = f"{BASE_PATH}/{acc_path}/{accession}" #exact FTP folder when NCBI is storing the genome assembly 
 
     print(f"[INFO] Fetching {assemblies}. . .")
 
@@ -56,37 +90,46 @@ def fetch_fasta(assembly_name, accession):
 
             for file in [fna_file, gff_file]:
                 if file:
-                    local_path = os.path.join(output_folder, f"{assembly_name}_{file}")
+                    local_name = f"{species_name.replace(' ', '_')}_{file}"
+                    local_path = os.path.join(output_folder, local_name)
+
+                    if os.path.exists(local_path) and not force_download:
+                        print(f"[SKIPPED] {file} already exists. Use --force to re-download.")
+                        continue
+
                     with open(local_path, "wb") as f:
                         print(f"[INFO] Downloading {file}...")
                         ftp.retrbinary(f"RETR {file}", f.write)
                     print(f"[SUCCESS] Downloaded {file} to {local_path}")
                 else:
-                    print(f"[WARNING] Could not find file for {assembly_name}")
+                    print(f"[WARNING] File not found for {species_name}")
     except Exception as e:
-        print(f"[ERROR] Failed to download {assembly_name}: {e}")
+        print(f"[ERROR] FTP download failed for {species_name}: {e}")
 
-# ==============
-# FETCH CHROMS
-# ==============
+#use argparse for --force option 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force", action="store_true", help="Force re-download even if files exist")
+    return parser.parse_args()
+
+
+# ==================
+# MAIN PROGRAM LOGIC 
+# ==================
+
 if __name__ == "__main__":
-    for name, acc in assemblies.items():
-        fetch_fasta(name, acc) #this is not defined?
+    args = parse_args()
+    species_dict = get_species_input()
 
-    print("[COMPLETE] Finished downloading all genomes.")
+    if not species_dict:
+        print("[INFO] No species provided. Exiting.")
+    else:
+        for species in species_dict.keys():
+            accession = get_assembly_accession(species)
+            if accession:
+                fetch_fasta(species, accession, force_download=args.force)
 
-"""
-==================================
-EXPECTED OUTPUT (in terminal)
-==================================
-
-[INFO] Fetching NC_079487.1 from NCBI...
-[SUCCESS] Saved NC_079487.1 to spinach_genome/NC_079487.1.fasta
-"""
-
-
-
-
+        print("[COMPLETE] All downloads finished.")
 
 
 
