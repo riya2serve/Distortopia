@@ -62,7 +62,7 @@ BASE_PATH = "/genomes/all"
 output_folder = "user-data"
 os.makedirs(output_folder, exist_ok=True) #creates the directory if it doesn't exist already
 
- """
+"""
     This function will fetch FASTA files from NCBI.
     Each FASTA will be saved locally (default: current user director)
 
