@@ -24,6 +24,7 @@ conda install python=3.10 biopython pandas matplotlib -c conda-forge
 with **pip**:
 ```bash
 pip install biopython pandas matplotlib
+pip install ncbi-datasets-pylib
 ```
 
 3. Install the package in editable mode

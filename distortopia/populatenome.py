@@ -1,113 +1,90 @@
-import os 
+import os
 import argparse
-from ftplib import FTP
-import gzip #useful for FASTA and GFF file decompression later on 
-from Bio import Entrez #for NCBI access
-from Bio import SeqIO #to parse through FASTA files later on
+import zipfile
+import shutil
+from ncbi.datasets import GenomeApi
+from Bio import Entrez
 
-# ================
+# ==================
 # CONFIGURATION
-# ================
+# ==================
 
-Entrez.email = "rr3491@columbia.edu" #required by NCBI 
+Entrez.email = "rr3491@columbia.edu"  # Required by NCBI
+output_folder = "user-data"
+os.makedirs(output_folder, exist_ok=True)
 
-# ================
-# MY FUNCTIONS
-# ================
+# ==================
+# FUNCTIONS
+# ==================
 
-#get species input from user via terminal:
 def get_species():
+    """
+    Prompts user for species names via terminal.
+    """
     species_dict = {}
-    print("Enter plant species name to search on NCBI (e.g. 'Amaranthus retrofleuxs'). Type 'done' to finish.")
+    print("Enter plant species name to search on NCBI (e.g. 'Amaranthus retroflexus'). Type 'done' to finish.")
 
     while True:
         species = input("Species name (or 'done'): ").strip()
         if species.lower() == "done":
             break
-        species_dict[species] = None #for accessions 
-    return species_dict 
+        species_dict[species] = None
+    return species_dict
 
-#use Entrez module to fetch genome assembly accessions from NCBI
-def get_assembly(species_name):
+
+def fetch_genome(species_name, output_folder="user-data", force_download=False):
     """
-    Get lastest assembly accessions for each given species name.
+    Uses the NCBI Datasets API to fetch genome FASTA and GFF files as a ZIP.
+    """
+    os.makedirs(output_folder, exist_ok=True)
+    safe_name = species_name.replace(" ", "_")
+    output_zip = os.path.join(output_folder, f"{safe_name}.zip")
+
+    if os.path.exists(output_zip) and not force_download:
+        print(f"{output_zip} already exists. Use --force to re-download.")
+        return
+    try:
+        api = GenomeApi()
+        print(f"Downloading genome for {species_name} using NCBI Datasets...")
+
+        response = api.download_assembly_package(
+            taxon=species_name,
+            include_annotation_type=["GENOME_FASTA", "GENOME_GFF"],
+            filename=output_zip,
+            format="zip"
+        )
+
+        with open(output_zip, "wb") as f:
+            shutil.copyfileobj(response, f)
+
+        print(f"Successfully downloaded genome for {species_name} → {output_zip}")
+
+    except Exception as e:
+        print(f"Failed to download genome for {species_name}: {e}")
+
+
+def extract_genome(zip_path, extract_to="user-data"):
+    """
+    Optional: Extracts downloaded zip files into the output directory.
     """
     try:
-        handle = Entrez.esearch(db = "assembly", term = species_name + "[Organism]", retmax = 1, sort = "relevance")
-        record = Entrez.read(handle)
-        handle.close()
-        if not record["IdList"]:
-            print(f"No assemblies found for {species_name}")
-            return None
-
-        uid = record["IdList"][0]
-
-        handle = Entrez.esummary(db="assembly", id=uid)
-        summary = Entrez.read(handle)
-        handle.close()
-
-        doc = summary['DocumentSummarySet']['DocumentSummary'][0]
-        acc = doc['AssemblyAccession']
-        print(f"Found assembly accession {acc} for {species_name}")
-        return acc  #NCBI FTP path format
-    
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_to)
+        print(f"Extracted contents of {zip_path}")
     except Exception as e:
-        print(f"Failed to fetch accession for {species_name}: {e}")
-        return None
+        print(f"Failed to extract {zip_path}: {e}")
 
-#download FASTA and GFF from NCBI's FTP server:
-
-FTP_HOST = "ftp.ncbi.nlm.nih.gov"
-BASE_PATH = "/genomes/all"
-output_folder = "user-data"
-os.makedirs(output_folder, exist_ok = True) #creates the directory if it doesn't exist already
-
-def fetch_fasta(species_name, accession, force_download=False):
-    full_accession = accession  # e.g. GCF_001406875.1
-    base_accession = accession.split('.')[0]  # GCF_001406875
-    numeric_part = base_accession.split('_')[1]
-    
-    acc_path = "/".join([numeric_part[i:i+3] for i in range(0, len(numeric_part), 3)])
-    full_path = f"{BASE_PATH}/{acc_path}/{full_accession}"  # include version!
-
-    print(f"Fetching files for {species_name} from {full_path}...")
-
-    try:
-        with FTP(FTP_HOST) as ftp:
-            ftp.login()
-            ftp.cwd(full_path) #will use 'full_path' var from above
-            files = ftp.nlst()
-
-            fna_file = next((f for f in files if f.endswith("_genomic.fna.gz")), None) #producing FASTA formatted file
-            gff_file = next((f for f in files if f.endswith("_genomic.gff.gz")), None) #producing GFF formatted file 
-
-            for file in [fna_file, gff_file]:
-                if file:
-                    local_name = f"{species_name.replace(' ', '_')}_{file}"
-                    local_path = os.path.join(output_folder, local_name)
-
-                    if os.path.exists(local_path) and not force_download:
-                        print(f"{file} already exists so skipped. Use --force to re-download.")
-                        continue
-
-                    with open(local_path, "wb") as f:
-                        print(f"Downloading {file}...")
-                        ftp.retrbinary(f"RETR {file}", f.write)
-                    print(f"Successfully downloaded {file} to {local_path}")
-                else:
-                    print(f"File not found for {species_name}")
-    
-    except Exception as e:
-        print(f"FTP download failed for {species_name}: {e}")
-
-#use argparse for --force option 
 def parse_args():
+    """
+    Handles command-line arguments.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--force", action="store_true", help="Force re-download even if files exist")
+    parser.add_argument("--extract", action="store_true", help="Extract downloaded ZIP files")
     return parser.parse_args()
 
 # ==================
-# MAIN PROGRAM LOGIC 
+# MAIN PROGRAM
 # ==================
 
 if __name__ == "__main__":
@@ -118,11 +95,12 @@ if __name__ == "__main__":
         print("No species provided. Exiting.")
     else:
         for species in species_dict.keys():
-            accession = get_assembly(species)
-            if accession:
-                fetch_fasta(species, accession, force_download=args.force)
+            fetch_genome(species, output_folder=output_folder, force_download=args.force)
+            if args.extract:
+                zip_path = os.path.join(output_folder, f"{species.replace(' ', '_')}.zip")
+                extract_genome(zip_path, extract_to=output_folder)
 
-        print("All downloads completed.")
+        print("All downloads finished.")
 
 
 
