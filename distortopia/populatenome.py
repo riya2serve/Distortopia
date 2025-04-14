@@ -78,7 +78,7 @@ def fetch_fasta(species_name, accession, force_download = False):
     #breaking accession into chunks of characters bc that is how NCBI organizes the FTP directory
     full_path = f"{BASE_PATH}/{acc_path}/{accession}" #exact FTP folder when NCBI is storing the genome assembly 
 
-    print(f"[INFO] Fetching {assemblies}. . .")
+    print(f"[INFO] Fetching files for {species_name}. . .")
 
     try:
         with FTP(FTP_HOST) as ftp:
