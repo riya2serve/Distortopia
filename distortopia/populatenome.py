@@ -55,23 +55,12 @@ def get_assembly(species_name):
         print(f"Failed to fetch accession for {species_name}: {e}")
         return None
 
-#download FASTA and GFF from NCBI's FTP:
+#download FASTA and GFF from NCBI's FTP server:
 
 FTP_HOST = "ftp.ncbi.nlm.nih.gov"
 BASE_PATH = "/genomes/all"
 output_folder = "user-data"
 os.makedirs(output_folder, exist_ok = True) #creates the directory if it doesn't exist already
-
-"""
-    This function will fetch FASTA files from NCBI.
-    Each FASTA will be saved locally (default: current user director)
-
-    #fetches fasta each time; change to make that optional to user
-    
-    parameters:
-        assemblies (string): NCBI genome assembly accession IDs
-        output_folder (string): directory where FASTA files will be stored
-"""
 
 def fetch_fasta(species_name, accession, force_download=False):
     accession = accession.split('.')[0]  # remove version (e.g. .1)
@@ -85,7 +74,7 @@ def fetch_fasta(species_name, accession, force_download=False):
     # final FTP folder path
     full_path = f"{BASE_PATH}/{acc_path}/{accession}"
 
-    print(f"[INFO] Fetching files for {species_name} from {full_path}...")
+    print(f"Fetching files for {species_name} from {full_path}...")
 
     try:
         with FTP(FTP_HOST) as ftp:
