@@ -27,7 +27,7 @@ def get_species():
         species_dict[species] = None #for accessions 
     return species_dict 
 
-#use Entrez module to fetch genome assembly accession from NCBI
+#use Entrez module to fetch genome assembly accessions from NCBI
 def get_assembly(species_name):
     """
     Get lastest assembly accessions for each given species name.
@@ -37,7 +37,7 @@ def get_assembly(species_name):
         record = Entrez.read(handle)
         handle.close()
         if not record["IdList"]:
-            print(f"[ERROR] No assemblies found for {species_name}")
+            print(f"No assemblies found for {species_name}")
             return None
 
         uid = record["IdList"][0]
@@ -48,11 +48,11 @@ def get_assembly(species_name):
 
         doc = summary['DocumentSummarySet']['DocumentSummary'][0]
         acc = doc['AssemblyAccession']
-        print(f"[INFO] Found assembly accession {acc} for {species_name}")
+        print(f"Found assembly accession {acc} for {species_name}")
         return acc.split('.')[0]  #NCBI FTP path format
     
     except Exception as e:
-        print(f"[ERROR] Failed to fetch accession for {species_name}: {e}")
+        print(f"Failed to fetch accession for {species_name}: {e}")
         return None
 
 #download FASTA and GFF from NCBI's FTP:
