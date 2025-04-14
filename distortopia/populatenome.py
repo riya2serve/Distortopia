@@ -59,14 +59,22 @@ def fetch_genomes(species_name, output_folder="user-data", force_download=False)
 
 def extract_zip(zip_path, extract_to="user-data"):
     """
-    Extract the downloaded zip file to the specified directory.
+    Extract only the FASTA (.fna.gz) and GFF (.gff.gz) files from the downloaded zip file.
     """
     try:
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(extract_to)
-        print(f"Extracted: {zip_path}")
+            # List of files to extract (FASTA and GFF files only)
+            files_to_extract = [f for f in zip_ref.namelist() if f.endswith(('.fna.gz', '.gff.gz'))]
+
+            if files_to_extract:
+                print(f"Extracting files: {', '.join(files_to_extract)}")
+                for file in files_to_extract:
+                    zip_ref.extract(file, extract_to)
+                print(f"Extracted specified files to: {extract_to}")
+            else:
+                print("No FASTA or GFF files found in the zip archive.")
     except Exception as e:
-        print(f"Failed to extract: {e}")
+        print(f"Failed to extract ZIP: {e}")
 
 def parse_args():
     """
