@@ -31,7 +31,7 @@ def get_species():
         species_dict[species] = None
     return species_dict
    
-def fetch_genome_with_datasets(species_name, output_folder="user-data", force_download=False):
+def fetch_genomes(species_name, output_folder="user-data", force_download=False):
     """
     Uses the NCBI Datasets API to fetch genome FASTA and GFF files as a ZIP.
     """
@@ -75,7 +75,7 @@ def fetch_genome_with_datasets(species_name, output_folder="user-data", force_do
     except Exception as e:
         print(f"Failed to download genome for {species_name}: {e}")
 
-def extract_genome(zip_path, extract_to="user-data"):
+def extract_genomes(zip_path, extract_to="user-data"):
     """
     Optional: Extracts downloaded zip files into the output directory.
     """
@@ -107,10 +107,10 @@ if __name__ == "__main__":
         print("No species provided. Exiting.")
     else:
         for species in species_dict.keys():
-            fetch_genome(species, output_folder=output_folder, force_download=args.force)
+            fetch_genomes(species, output_folder=output_folder, force_download=args.force)
             if args.extract:
                 zip_path = os.path.join(output_folder, f"{species.replace(' ', '_')}.zip")
-                extract_genome(zip_path, extract_to=output_folder)
+                extract_genomes(zip_path, extract_to=output_folder)
 
         print("All downloads finished.")
 
