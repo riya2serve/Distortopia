@@ -32,11 +32,10 @@ def get_species():
     return species_dict
    
 def fetch_genome_with_datasets(species_name, output_folder="user-data", force_download=False):
-     """
+    """
     Uses the NCBI Datasets API to fetch genome FASTA and GFF files as a ZIP.
     """
     from ncbi.datasets import V1alpha1AssemblyCatalogApi, GenomeApi
-
     os.makedirs(output_folder, exist_ok=True)
     safe_name = species_name.replace(" ", "_")
     output_zip = os.path.join(output_folder, f"{safe_name}.zip")
