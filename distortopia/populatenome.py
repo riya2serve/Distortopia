@@ -49,7 +49,7 @@ def get_assembly(species_name):
         doc = summary['DocumentSummarySet']['DocumentSummary'][0]
         acc = doc['AssemblyAccession']
         print(f"Found assembly accession {acc} for {species_name}")
-        return acc.split('.')[0]  #NCBI FTP path format
+        return acc  #NCBI FTP path format
     
     except Exception as e:
         print(f"Failed to fetch accession for {species_name}: {e}")
