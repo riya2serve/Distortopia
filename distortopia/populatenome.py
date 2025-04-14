@@ -42,17 +42,18 @@ def get_assembly(species_name):
 
         uid = record["IdList"][0]
 
-    handle = Entrez.esummary(db="assembly", id=uid)
-    summary = Entrez.read(handle)
-    handle.close()
+        handle = Entrez.esummary(db="assembly", id=uid)
+        summary = Entrez.read(handle)
+        handle.close()
 
-    doc = summary['DocumentSummarySet']['DocumentSummary'][0]
-    acc = doc['AssemblyAccession']
-    print(f"[INFO] Found assembly accession {acc} for {species_name}")
-    return acc.replace("GCF_", "").replace("GCA_", "")  # NCBI FTP path format
-except Exception as e:
-    print(f"[ERROR] Failed to fetch accession for {species_name}: {e}")
-    return None
+        doc = summary['DocumentSummarySet']['DocumentSummary'][0]
+        acc = doc['AssemblyAccession']
+        print(f"[INFO] Found assembly accession {acc} for {species_name}")
+        return acc.replace("GCF_", "").replace("GCA_", "")  # NCBI FTP path format
+    
+    except Exception as e:
+        print(f"[ERROR] Failed to fetch accession for {species_name}: {e}")
+        return None
 
 #download FASTA and GFF from NCBI's FTP:
 
