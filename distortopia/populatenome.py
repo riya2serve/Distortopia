@@ -73,13 +73,19 @@ os.makedirs(output_folder, exist_ok = True) #creates the directory if it doesn't
         output_folder (string): directory where FASTA files will be stored
 """
 
-def fetch_fasta(species_name, accession, force_download = False):
+def fetch_fasta(species_name, accession, force_download=False):
+    accession = accession.split('.')[0]  # remove version (e.g. .1)
+    
+    # extract only the number part from accession (e.g. '036942975')
+    numeric_part = accession.split('_')[1]
+    
+    # build FTP subdirectory path like 036/942/975
+    acc_path = "/".join([numeric_part[i:i+3] for i in range(0, len(numeric_part), 3)])
+    
+    # final FTP folder path
+    full_path = f"{BASE_PATH}/{acc_path}/{accession}"
 
-    acc_path = "/".join([accession[i:i+3] for i in range(0, len(accession.replace("GCA_", "").replace("GCF_", "")), 3)])
-    #breaking accession into chunks of characters bc that is how NCBI organizes the FTP directory
-    full_path = f"{BASE_PATH}/{acc_path}/{accession}" #exact FTP folder when NCBI is storing the genome assembly 
-
-    print(f"[INFO] Fetching files for {species_name}. . .")
+    print(f"[INFO] Fetching files for {species_name} from {full_path}...")
 
     try:
         with FTP(FTP_HOST) as ftp:
