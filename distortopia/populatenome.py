@@ -119,13 +119,13 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    species_dict = get_species_input()
+    species_dict = get_species()
 
     if not species_dict:
         print("[INFO] No species provided. Exiting.")
     else:
         for species in species_dict.keys():
-            accession = get_assembly_accession(species)
+            accession = get_assembly(species)
             if accession:
                 fetch_fasta(species, accession, force_download=args.force)
 
