@@ -63,16 +63,12 @@ output_folder = "user-data"
 os.makedirs(output_folder, exist_ok = True) #creates the directory if it doesn't exist already
 
 def fetch_fasta(species_name, accession, force_download=False):
-    accession = accession.split('.')[0]  # remove version (e.g. .1)
+    full_accession = accession  # e.g. GCF_001406875.1
+    base_accession = accession.split('.')[0]  # GCF_001406875
+    numeric_part = base_accession.split('_')[1]
     
-    # extract only the number part from accession (e.g. '036942975')
-    numeric_part = accession.split('_')[1]
-    
-    # build FTP subdirectory path like 036/942/975
     acc_path = "/".join([numeric_part[i:i+3] for i in range(0, len(numeric_part), 3)])
-    
-    # final FTP folder path
-    full_path = f"{BASE_PATH}/{acc_path}/{accession}"
+    full_path = f"{BASE_PATH}/{acc_path}/{full_accession}"  # include version!
 
     print(f"Fetching files for {species_name} from {full_path}...")
 
