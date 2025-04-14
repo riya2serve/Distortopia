@@ -102,17 +102,18 @@ def fetch_fasta(species_name, accession, force_download=False):
                     local_path = os.path.join(output_folder, local_name)
 
                     if os.path.exists(local_path) and not force_download:
-                        print(f"[SKIPPED] {file} already exists. Use --force to re-download.")
+                        print(f"{file} already exists so skipped. Use --force to re-download.")
                         continue
 
                     with open(local_path, "wb") as f:
-                        print(f"[INFO] Downloading {file}...")
+                        print(f"Downloading {file}...")
                         ftp.retrbinary(f"RETR {file}", f.write)
-                    print(f"[SUCCESS] Downloaded {file} to {local_path}")
+                    print(f"Successfully downloaded {file} to {local_path}")
                 else:
-                    print(f"[WARNING] File not found for {species_name}")
+                    print(f"File not found for {species_name}")
+    
     except Exception as e:
-        print(f"[ERROR] FTP download failed for {species_name}: {e}")
+        print(f"FTP download failed for {species_name}: {e}")
 
 #use argparse for --force option 
 def parse_args():
@@ -129,14 +130,14 @@ if __name__ == "__main__":
     species_dict = get_species()
 
     if not species_dict:
-        print("[INFO] No species provided. Exiting.")
+        print("No species provided. Exiting.")
     else:
         for species in species_dict.keys():
             accession = get_assembly(species)
             if accession:
                 fetch_fasta(species, accession, force_download=args.force)
 
-        print("[COMPLETE] All downloads finished.")
+        print("All downloads completed.")
 
 
 
