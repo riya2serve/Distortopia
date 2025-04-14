@@ -40,7 +40,7 @@ def get_assembly(species_name):
             print(f"[ERROR] No assemblies found for {species_name}")
             return None
 
-    uid = record["IdList"][0]
+        uid = record["IdList"][0]
 
     handle = Entrez.esummary(db="assembly", id=uid)
     summary = Entrez.read(handle)
@@ -111,7 +111,6 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--force", action="store_true", help="Force re-download even if files exist")
     return parser.parse_args()
-
 
 # ==================
 # MAIN PROGRAM LOGIC 
