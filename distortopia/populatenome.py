@@ -49,7 +49,7 @@ def get_assembly(species_name):
         doc = summary['DocumentSummarySet']['DocumentSummary'][0]
         acc = doc['AssemblyAccession']
         print(f"[INFO] Found assembly accession {acc} for {species_name}")
-        return acc.replace("GCF_", "").replace("GCA_", "")  # NCBI FTP path format
+        return acc.split('.')[0]  #NCBI FTP path format
     
     except Exception as e:
         print(f"[ERROR] Failed to fetch accession for {species_name}: {e}")
@@ -74,7 +74,8 @@ os.makedirs(output_folder, exist_ok=True) #creates the directory if it doesn't e
 """
 
 def fetch_fasta(species_name, accession, force_download = False):
-    acc_path = "/".join([accession[i:i+3] for i in range(0, len(accession), 3)])
+
+    acc_path = "/".join([accession[i:i+3] for i in range(0, len(accession.replace("GCA_", "").replace("GCF_", "")), 3)])
     #breaking accession into chunks of characters bc that is how NCBI organizes the FTP directory
     full_path = f"{BASE_PATH}/{acc_path}/{accession}" #exact FTP folder when NCBI is storing the genome assembly 
 
