@@ -31,7 +31,7 @@ def get_species():
         species_dict[species] = None
     return species_dict
    
-   def fetch_genome_with_datasets(species_name, output_folder="user-data", force_download=False):
+def fetch_genome_with_datasets(species_name, output_folder="user-data", force_download=False):
      """
     Uses the NCBI Datasets API to fetch genome FASTA and GFF files as a ZIP.
     """
