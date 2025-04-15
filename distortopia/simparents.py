@@ -40,10 +40,10 @@ def run_minimap2(ref_fasta, query_fasta, output_vcf):
     print("\nRunning minimap2...")
 
     with open(paf_path, "w") as paf_out:
-    subprocess.run(
-        [minimap_path, "-t", "4", "-cx", "asm5", ref_fasta, query_fasta],
-        stdout=paf_out,
-        check=True
+        subprocess.run(
+            [minimap_path, "-t", "4", "-cx", "asm5", ref_fasta, query_fasta],
+            stdout=paf_out,
+            check=True
     )
 
 print("Finished minimap2. Now loading reference sequences...")
