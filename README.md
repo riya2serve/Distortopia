@@ -14,12 +14,17 @@ To install the development version locally and contribute to the code:
 git clone https://github.com/YOUR-USERNAME/Distortopia.git
 cd Distortopia
 ```
+```bash
+git clone https://github.com/lh3/minimap2.git
+cd minimap2
+```
 
 2. Install dependencies (user chooses one)
 
 With **conda**:
 ```bash
 conda install python=3.10 biopython pandas matplotlib -c conda-forge
+conda install -c bioconda minimap2
 ```
 with **pip**:
 ```bash
