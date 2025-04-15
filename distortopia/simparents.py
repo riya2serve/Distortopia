@@ -2,6 +2,7 @@ import os
 import glob
 from Bio import SeqIO
 import argparse
+import subprocess
 
 """
 This script will take two input FASTA files (--ref-dir and --query-dir).
