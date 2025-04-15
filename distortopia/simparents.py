@@ -34,38 +34,35 @@ def choose_fasta(species_name, species_dir):
 
 def run_minimap2(ref_fasta, query_fasta, output_vcf):
     script_dir = os.path.dirname(__file__)
-    minimap_path = "minimap2"
+    minimap_path = os.path.join(script_dir, "minimap2", "minimap2")
     paf_path = output_vcf.replace(".vcf", ".paf")
 
     print("\nRunning minimap2...")
-
     with open(paf_path, "w") as paf_out:
         subprocess.run(
             [minimap_path, "-t", "4", "-cx", "asm5", ref_fasta, query_fasta],
             stdout=paf_out,
             check=True
-    )
+        )
+    print("Finished minimap2. Now loading reference sequences...")
 
-print("Finished minimap2. Now loading reference sequences...")
+    ref_seqs = {rec.id: str(rec.seq) for rec in SeqIO.parse(ref_fasta, "fasta")}
 
-ref_seqs = {rec.id: str(rec.seq) for rec in SeqIO.parse(ref_fasta, "fasta")}
-
-    print("Calling variants from PAF...")
+    print("✔️ Starting PAF parsing and SNP extraction...")
     with open(paf_path) as paf, open(output_vcf, "w") as vcf:
         vcf.write("##fileformat=VCFv4.2\n")
         vcf.write("##source=minimap2+python\n")
         vcf.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
 
-        for line in paf:
+        for i, line in enumerate(paf):
             cols = line.strip().split("\t")
             if len(cols) < 12 or not cols[0] or not cols[5]:
                 continue
 
             qname, qstart, qend = cols[0], int(cols[2]), int(cols[3])
             tname, tstart, tend = cols[5], int(cols[7]), int(cols[8])
-            ref_seqs = {rec.id.split()[0]: str(rec.seq) for rec in SeqIO.parse(ref_fasta, "fasta")}
-
-            if not ref_seqs:
+            ref_seq = ref_seqs.get(tname)
+            if not ref_seq:
                 continue
             ref_sub = ref_seq[tstart:tend]
 
@@ -73,24 +70,29 @@ ref_seqs = {rec.id: str(rec.seq) for rec in SeqIO.parse(ref_fasta, "fasta")}
                 if field.startswith("cs:Z:"):
                     cs = field[5:]
                     ref_pos = tstart
-                    i = 0
-                    while i < len(cs):
-                        if cs[i] == ":":
-                            i += 1
+                    i_cs = 0
+                    while i_cs < len(cs):
+                        if cs[i_cs] == ":":
+                            i_cs += 1
                             num = ""
-                            while i < len(cs) and cs[i].isdigit():
-                                num += cs[i]
-                                i += 1
+                            while i_cs < len(cs) and cs[i_cs].isdigit():
+                                num += cs[i_cs]
+                                i_cs += 1
                             ref_pos += int(num)
-                        elif cs[i] == "*":
-                            if i + 2 < len(cs):
-                                ref_base = cs[i+1]
-                                alt_base = cs[i+2]
+                        elif cs[i_cs] == "*":
+                            if i_cs + 2 < len(cs):
+                                ref_base = cs[i_cs+1]
+                                alt_base = cs[i_cs+2]
                                 vcf.write(f"{tname}\t{ref_pos+1}\t.\t{ref_base}\t{alt_base}\t.\tPASS\t.\n")
                                 ref_pos += 1
-                            i += 3
+                            i_cs += 3
                         else:
-                            i += 1
+                            i_cs += 1
+
+            if i % 1000 == 0:
+                print(f"Processed {i} PAF lines...")
+
+    print(f"VCF written to: {output_vcf}")
 
 def gen_HTML(vcf_path, html_out = "snp_summary.html"):
     """
