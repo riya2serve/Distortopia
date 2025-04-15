@@ -31,45 +31,61 @@ def choose_fasta(species_name, species_dir):
         except ValueError:
             print("Please enter a valid number.")
 
-def compare_contigs(ref_fasta, query_fasta, output_vcf, mode="length", top_n=5):
-    """
-    Compare top N contigs by order or length between two genome assemblies.
-    """
-    ref_seqs = list(SeqIO.parse(ref_fasta, "fasta"))
-    query_seqs = list(SeqIO.parse(query_fasta, "fasta"))
+def run_minimap2(ref_fasta, query_fasta, output_vcf):
+    script_dir = os.path.dirname(__file__)
+    minimap_path = os.path.join(script_dir, "minimap2", "minimap2")
+    paf_path = output_vcf.replace(".vcf", ".paf")
 
-    if mode == "length":
-        ref_seqs.sort(key=lambda s: -len(s))
-        query_seqs.sort(key=lambda s: -len(s))
+    print("\nRunning minimap2...")
+    with open(paf_path, "w") as paf_out:
+        subprocess.run(
+            [minimap_path, "-cx", "asm5", ref_fasta, query_fasta],
+            stdout=paf_out,
+            check=True
+        )
 
-    pair_count = min(top_n, len(ref_seqs), len(query_seqs))
-    print(f"\nComparing top {pair_count} contigs by {mode}...\n")
+    ref_seqs = {rec.id: str(rec.seq) for rec in SeqIO.parse(ref_fasta, "fasta")}
 
-    with open(output_vcf, "w") as vcf:
+    print("Calling variants from PAF...")
+    with open(paf_path) as paf, open(output_vcf, "w") as vcf:
         vcf.write("##fileformat=VCFv4.2\n")
-        vcf.write("##source=BiopythonSNPComparer\n")
+        vcf.write("##source=minimap2+python\n")
         vcf.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
 
-        for i in range(pair_count):
-            ref = ref_seqs[i] #reference genome 
-            query = query_seqs[i] #query = 'alt' genome 
-            chrom = f"{ref.id}_vs_{query.id}" #comparing chromosomes 
+        for line in paf:
+            cols = line.strip().split("\t")
+            if len(cols) < 12 or not cols[0] or not cols[5]:
+                continue
 
-            ref_seq = str(ref.seq).upper()
-            query_seq = str(query.seq).upper()
-            min_len = min(len(ref_seq), len(query_seq))
-            snp_count = 0 #starting counter for SNPs
+            qname, qstart, qend = cols[0], int(cols[2]), int(cols[3])
+            tname, tstart, tend = cols[5], int(cols[7]), int(cols[8])
+            ref_seq = ref_seqs.get(tname)
+            if not ref_seq:
+                continue
+            ref_sub = ref_seq[tstart:tend]
 
-            for j in range(min_len):
-                r = ref_seq[j]
-                q = query_seq[j]
-                if r != q and r in "ACGT" and q in "ACGT": #will write these into VCF
-                    vcf.write(f"{chrom}\t{j+1}\t.\t{r}\t{q}\t.\tPASS\t.\n") #writing into VCF 
-                    snp_count += 1 #enumerating SNP counter 
-
-            print(f"Compared {chrom} → {snp_count:,} SNPs") 
-
-    print(f"\nSNP comparison complete → {output_vcf}")
+            for field in cols[12:]:
+                if field.startswith("cs:Z:"):
+                    cs = field[5:]
+                    ref_pos = tstart
+                    i = 0
+                    while i < len(cs):
+                        if cs[i] == ":":
+                            i += 1
+                            num = ""
+                            while i < len(cs) and cs[i].isdigit():
+                                num += cs[i]
+                                i += 1
+                            ref_pos += int(num)
+                        elif cs[i] == "*":
+                            if i + 2 < len(cs):
+                                ref_base = cs[i+1]
+                                alt_base = cs[i+2]
+                                vcf.write(f"{tname}\t{ref_pos+1}\t.\t{ref_base}\t{alt_base}\t.\tPASS\t.\n")
+                                ref_pos += 1
+                            i += 3
+                        else:
+                            i += 1
 
 def gen_HTML(vcf_path, html_out = "snp_summary.hmtl"):
     """
@@ -114,8 +130,8 @@ if __name__ == "__main__":
     query_fasta = choose_fasta("Species 2", args.query_dir)
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
-    compare_contigs(ref_fasta, query_fasta, args.out, mode=args.mode, top_n=args.top_n)
-    
+    run_minimap2(ref_fasta, query_fasta, args.out)
+
     if args.summary:
         html_out = args.out.replace(".vcf", "_summary.html")
         gen_HTML(args.out, html_out)
