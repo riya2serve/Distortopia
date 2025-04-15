@@ -133,6 +133,12 @@ User input should look something like this w/ argparse arguments
   ###--mode order \
   ###--top-n 5
 
+'''
+User output should be a VCF and an HTML (optional). To view the HTML use this command in the terminal:
+''''
+##bash
+#open genomes/athal_vs_alyr_by_order_summary.html
+
 
 
 
