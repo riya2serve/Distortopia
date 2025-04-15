@@ -114,6 +114,7 @@ def parse_args():
     parser.add_argument("--mode", choices=["length", "order"], default="length",
                         help="How to match contigs: by length (default) or order")
     parser.add_argument("--top-n", type=int, default=5, help="Number of contigs to compare (default: 5)")
+    parser.add_argument("--summary", action="store_true", help="Generate an HTML summary table of SNP counts per contig")
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -124,7 +125,10 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
     compare_contigs(ref_fasta, query_fasta, args.out, mode=args.mode, top_n=args.top_n)
-    gen_HTML(args.out, html_out=args.out.replace(".vcf", "_summary.html"))
+    
+    if args.summary:
+    html_out = args.out.replace(".vcf", "_summary.html")
+    gen_HTML(args.out, html_out)
 
 ## ========
 # EXAMPLE INPUT/ OUTPUT 
