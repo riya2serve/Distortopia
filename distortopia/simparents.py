@@ -1,28 +1,29 @@
 import os
 import glob
 from Bio import SeqIO
-from io import StringIO
-import argparse
+from io import StringIO #for HTML
+import argparse #to establish flags for user
 import pandas as pd #to genrate HTML with color-codes SNPs
 
 """
-This script allows a user to select one genome FASTA from each of two species,
-then compares them base-by-base for all matching contigs (by order/length).
+This script allows a user to select a genome FASTA from each of two species,
+then compares them base-by-base for all matching contigs (by order and/or length).
 
 It outputs a real, biologically meaningful VCF of SNPs between the two genome assemblies.
 """
 def choose_fasta(species_name, species_dir):
     fasta_paths = glob.glob(f"{species_dir}/**/*genomic.fna", recursive=True)
     if not fasta_paths:
-        raise FileNotFoundError(f"No FASTA files found for {species_name} in {species_dir}")
+        raise FileNotFoundError(f"No FASTA files found for {species_name} in {species_dir}") #if there are no FASTA files found from NCBI
 
-    print(f"\n[SELECT FASTA FOR {species_name}]")
+    print(f"\n[SELECT FASTA FOR {species_name}]") #giving user option to select which species
     for i, path in enumerate(fasta_paths):
         print(f"{i+1}. {path}")
 
     while True:
         try:
-            index = int(input(f"Enter number [1-{len(fasta_paths)}]: ")) - 1
+            index = int(input(f"Enter number [1-{len(fasta_paths)}]: ")) - 1 #user inputs number from 1-(some num of species fasta files)
+            #NCBI might have multiple .fna files, hence the selection option 
             if 0 <= index < len(fasta_paths):
                 return fasta_paths[index]
             else:
@@ -50,23 +51,23 @@ def compare_contigs(ref_fasta, query_fasta, output_vcf, mode="length", top_n=5):
         vcf.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
 
         for i in range(pair_count):
-            ref = ref_seqs[i]
-            query = query_seqs[i]
-            chrom = f"{ref.id}_vs_{query.id}"
+            ref = ref_seqs[i] #reference genome 
+            query = query_seqs[i] #query = 'alt' genome 
+            chrom = f"{ref.id}_vs_{query.id}" #comparing chromosomes 
 
             ref_seq = str(ref.seq).upper()
             query_seq = str(query.seq).upper()
             min_len = min(len(ref_seq), len(query_seq))
-            snp_count = 0
+            snp_count = 0 #starting counter for SNPs
 
             for j in range(min_len):
                 r = ref_seq[j]
                 q = query_seq[j]
-                if r != q and r in "ACGT" and q in "ACGT":
-                    vcf.write(f"{chrom}\t{j+1}\t.\t{r}\t{q}\t.\tPASS\t.\n")
-                    snp_count += 1
+                if r != q and r in "ACGT" and q in "ACGT": #will write these into VCF
+                    vcf.write(f"{chrom}\t{j+1}\t.\t{r}\t{q}\t.\tPASS\t.\n") #writing into VCF 
+                    snp_count += 1 #enumerating SNP counter 
 
-            print(f"Compared {chrom} → {snp_count:,} SNPs")
+            print(f"Compared {chrom} → {snp_count:,} SNPs") 
 
     print(f"\nSNP comparison complete → {output_vcf}")
 
@@ -120,10 +121,10 @@ if __name__ == "__main__":
         gen_HTML(args.out, html_out)
 
 ## ========
-# EXAMPLE INPUT/ OUTPUT 
+# EXAMPLE INPUT/OUTPUT 
 ## ========
 '''
-User input should look something like this w/ argparse arguments
+User input should look something like this w/ argparse flags:
 '''
 #bash
 ##python compare_fasta_snps.py \
@@ -134,10 +135,12 @@ User input should look something like this w/ argparse arguments
   ###--top-n 5
 
 '''
-User output should be a VCF and an HTML (optional). To view the HTML use this command in the terminal:
-''''
-##bash
-#open genomes/athal_vs_alyr_by_order_summary.html
+User output should be a VCF and an HTML (optional). 
+To generate the HTML user will need to use the --summary flag. 
+To view/open the HTML user should enter this command in their terminal:
+'''
+#bash
+##open genomes/athal_vs_alyr_by_order_summary.html
 
 
 
