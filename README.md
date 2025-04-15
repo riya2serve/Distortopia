@@ -35,6 +35,13 @@ pip install -e .
 4. Run the CLI tool:
 ```bash
 python -m distortopia --help
+python populatenome.py --extract
+unzip user-data/Arabidopsis_lyrata.zip -d user-data/Arabidopsis_lyrata
+unzip user-data/Arabidopsis_thaliana.zip -d user-data/Arabidopsis_thaliana
+```
+```bash
+datasets rehydrate --directory user-data/Arabidopsis_lyrata
+datasets rehydrate --directory user-data/Arabidopsis_thaliana
 ```
 
 For detailed goals, usage examples, pseudocode, and file formats, please see: [proposal.md](./proposal.md).
