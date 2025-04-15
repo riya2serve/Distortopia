@@ -13,8 +13,8 @@ then compares them base-by-base for all matching contigs (by order and/or length
 It outputs a real, biologically meaningful VCF of SNPs between the two genome assemblies.
 """
 def choose_fasta(species_name, species_dir):
-    fasta_paths = glob.glob(f"{species_dir}/**/*.fna*", recursive=True) + \
-              glob.glob(os.path.join(species_dir, "**", "ncbi_dataset", "data", "*", "*.fna*"), recursive=True)
+    fasta_paths = glob.glob(f"{species_dir}/**/*.fna", recursive=True) + \
+              glob.glob(f"{species_dir}/**/*.fna.gz", recursive=True)
     if not fasta_paths:
         raise FileNotFoundError(f"No FASTA files found for {species_name} in {species_dir}") #if there are no FASTA files found from NCBI
 
