@@ -34,7 +34,7 @@ def choose_fasta(species_name, species_dir):
 
 def run_minimap2(ref_fasta, query_fasta, output_vcf):
     script_dir = os.path.dirname(__file__)
-    minimap_path = os.path.join(script_dir, "minimap2", "minimap2")
+    minimap_path = os.path.join(script_dir, "minimap2")
     paf_path = output_vcf.replace(".vcf", ".paf")
 
     print("\nRunning minimap2...")
@@ -88,7 +88,7 @@ def run_minimap2(ref_fasta, query_fasta, output_vcf):
                         else:
                             i += 1
 
-def gen_HTML(vcf_path, html_out = "snp_summary.hmtl"):
+def gen_HTML(vcf_path, html_out = "snp_summary.html"):
     """
     Loads a user-generated VCF file, summarizes SNP per contig, exports a styled HTML table.
     """ 
