@@ -15,16 +15,15 @@ It outputs a real, biologically meaningful VCF of SNPs between the two genome as
 def choose_fasta(species_name, species_dir):
     fasta_paths = glob.glob(os.path.join(species_dir, "ncbi_dataset", "data", "*", "*.fna*"), recursive=True)
     if not fasta_paths:
-        raise FileNotFoundError(f"No FASTA files found for {species_name} in {species_dir}") #if there are no FASTA files found from NCBI
+        raise FileNotFoundError(f"No FASTA files found for {species_name} in {species_dir}")  # if there are no FASTA files found from NCBI
 
-    print(f"\n[SELECT FASTA FOR {species_name}]") #giving user option to select which species
+    print(f"\n[SELECT FASTA FOR {species_name}]")  # giving user option to select which species
     for i, path in enumerate(fasta_paths):
         print(f"{i+1}. {path}")
 
     while True:
         try:
-            index = int(input(f"Enter number [1-{len(fasta_paths)}]: ")) - 1 #user inputs number from 1-(some num of species fasta files)
-            #NCBI might have multiple .fna files, hence the selection option 
+            index = int(input(f"Enter number [1-{len(fasta_paths)}]: ")) - 1
             if 0 <= index < len(fasta_paths):
                 return fasta_paths[index]
             else:
