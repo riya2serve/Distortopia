@@ -91,20 +91,8 @@ def gen_HTML(vcf_path, html_out = "snp_summary.hmtl"):
     summary = df["CHROM"].value_counts().reset_index()
     summary.columns = ["CHROM", "SNP_COUNT"]
 
-    # Color styling
-    def color(val):
-        if val > 50000:
-            return "background-color: #d73027; color: white"
-        elif val > 10000:
-            return "background-color: #fc8d59"
-        elif val > 1000:
-            return "background-color: #fee08b"
-        else:
-            return "background-color: #d9ef8b"
-
-    styled = summary.style.applymap(color, subset=["SNP_COUNT"])
-    styled.to_html(html_out, index=False)
-
+    # Save to HTML with simple formatting
+    summary.to_html(html_out, index=False)
     print(f"SNP summary table written to: {html_out}")
 
 def parse_args():
