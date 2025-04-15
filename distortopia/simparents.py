@@ -33,45 +33,30 @@ def choose_fasta(species_name, species_dir):
         except ValueError:
             print("Please enter a valid number.")
 
-def compare_fastas(ref_fasta, query_fasta, output_vcf):
+def align_call_variants(ref_fasta, query_fasta, output_vcf, paftools_path):
     """
-    Compare two FASTA files base-by-base and output SNPs to VCF.
+    Align query to reference using minimap2 and call variants with paftools.js.
     """
-    ref_seqs = SeqIO.to_dict(SeqIO.parse(ref_fasta, "fasta"))
-    query_seqs = SeqIO.to_dict(SeqIO.parse(query_fasta, "fasta"))
+    paf_file = output_vcf.replace(".vcf", ".paf")
 
-    with open(output_vcf, "w") as vcf:
-        vcf.write("##fileformat=VCFv4.2\n")
-        vcf.write("##source=BiopythonSNPComparer\n")
-        vcf.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
+    print(f"\nAligning query → reference using minimap2...")
+    with open(paf_file, "w") as paf_out:
+        subprocess.run(["minimap2", "-x", "asm5", ref_fasta, query_fasta],
+                       stdout=paf_out, check=True)
 
-        for chrom in ref_seqs:
-            if chrom not in query_seqs:
-                print(f"[SKIP] {chrom} not found in query genome.")
-                continue
+    print(f"Calling variants with paftools.js...")
+    with open(output_vcf, "w") as vcf_out:
+        subprocess.run(["node", paftools_path, "call", paf_file],
+                       stdout=vcf_out, check=True)
 
-            ref_seq = str(ref_seqs[chrom].seq).upper()
-            query_seq = str(query_seqs[chrom].seq).upper()
-
-            min_len = min(len(ref_seq), len(query_seq))
-            snp_count = 0
-
-            for i in range(min_len):
-                r = ref_seq[i]
-                q = query_seq[i]
-                if r != q and r in "ACGT" and q in "ACGT":
-                    vcf.write(f"{chrom}\t{i+1}\t.\t{r}\t{q}\t.\tPASS\t.\n")
-                    snp_count += 1
-
-            print(f"Compared {chrom} → {snp_count:,} SNPs found.")
-
-    print(f"\nSNP comparison complete → {output_vcf}")
+    print(f"\nVariant calling complete → {output_vcf}")
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Interactively compare two genome FASTAs and identify SNPs")
-    parser.add_argument("--ref-dir", required=True, help="Directory containing FASTA(s) for species 1")
-    parser.add_argument("--query-dir", required=True, help="Directory containing FASTA(s) for species 2")
+    parser = argparse.ArgumentParser(description="Align two genome FASTAs and call real variants")
+    parser.add_argument("--ref-dir", required=True, help="Directory containing FASTA(s) for reference species")
+    parser.add_argument("--query-dir", required=True, help="Directory containing FASTA(s) for query species")
     parser.add_argument("--out", required=True, help="Output VCF path")
+    parser.add_argument("--paftools", default="minimap2/paftools.js", help="Path to paftools.js")
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -82,6 +67,7 @@ if __name__ == "__main__":
     query_fasta = choose_fasta("Species 2", args.query_dir)
 
     # Compare and output SNPs
-    compare_fastas(ref_fasta, query_fasta, args.out)
+    align_and_call_variants(ref_fasta, query_fasta, args.out, args.paftools)
+
 
 
