@@ -67,7 +67,7 @@ if __name__ == "__main__":
     query_fasta = choose_fasta("Species 2", args.query_dir)
 
     # Compare and output SNPs
-    align_and_call_variants(ref_fasta, query_fasta, args.out, args.paftools)
+    align_call_variants(ref_fasta, query_fasta, args.out, args.paftools)
 
 
 
