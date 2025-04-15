@@ -5,7 +5,7 @@ import argparse
 
 """
 This script allows a user to select one genome FASTA from each of two species,
-then compares them base-by-base for all matching contigs (by name).
+then compares them base-by-base for all matching contigs (by order/length).
 
 It outputs a real, biologically meaningful VCF of SNPs between the two genome assemblies.
 """
@@ -86,3 +86,5 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
     compare_contigs(ref_fasta, query_fasta, args.out, mode=args.mode, top_n=args.top_n)
+
+
