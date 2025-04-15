@@ -1,6 +1,7 @@
 import os
 import glob
 from Bio import SeqIO
+from io import StringIO
 import argparse
 import pandas as pd #to genrate HTML with color-codes SNPs
 
@@ -77,7 +78,7 @@ def gen_HTML(vcf_path, html_out = "snp_summary.hmtl"):
         lines = [line for line in f if not line.startswith("#")]
 
     df = pd.read_csv(
-        pd.compat.StringIO("".join(lines)),
+        StringIO("".join(lines)),
         sep="\t", #separating columns 
         names=["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"] #column names
     )
