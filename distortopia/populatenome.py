@@ -45,9 +45,16 @@ def fetch_genomes(species_name, output_folder="user-data", force_download=False)
     try:
         subprocess.run([
             "datasets", "download", "genome", "taxon", species_name,
-            "--include", "genome,gff3",
-            "--filename", zip_path
-        ], check=True)
+            "--filename", zip_path,
+            "--dehydrated",
+            "--include", "genome,gff3"
+            ], check=True)
+
+        #Rehydrate after download
+        subprocess.run([
+            "datasets", "rehydrate",
+            "--directory", output_folder
+            ], check=True)
 
         print(f"Downloaded genome for {species_name} → {zip_path}")
 
