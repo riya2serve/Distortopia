@@ -8,3 +8,6 @@ user-data/
 *.fasta
 *.fna
 *.gff
+
+# Ignore all generated VCFs
+genomes/*.vcf 
