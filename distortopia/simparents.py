@@ -62,7 +62,7 @@ def run_minimap2(ref_fasta, query_fasta, output_vcf):
             tname, tstart, tend = cols[5], int(cols[7]), int(cols[8])
             ref_seqs = {rec.id.split()[0]: str(rec.seq) for rec in SeqIO.parse(ref_fasta, "fasta")}
 
-            if not ref_seq:
+            if not ref_seqs:
                 continue
             ref_sub = ref_seq[tstart:tend]
 
