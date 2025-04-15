@@ -127,8 +127,8 @@ if __name__ == "__main__":
     compare_contigs(ref_fasta, query_fasta, args.out, mode=args.mode, top_n=args.top_n)
     
     if args.summary:
-    html_out = args.out.replace(".vcf", "_summary.html")
-    gen_HTML(args.out, html_out)
+        html_out = args.out.replace(".vcf", "_summary.html")
+        gen_HTML(args.out, html_out)
 
 ## ========
 # EXAMPLE INPUT/ OUTPUT 
