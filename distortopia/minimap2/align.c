@@ -2,6 +2,8 @@
 #define KSW_SSE41_DISABLE
 #define KSW_AVX2_DISABLE
 #define KSW_NEON_DISABLE
+#define KSW_EXTZ2_DISABLE
+#define KSW_LLDISABLE
 
 #include <assert.h>
 #include <string.h>
