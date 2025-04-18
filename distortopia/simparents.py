@@ -53,7 +53,7 @@ def run_minimap2(ref_fasta, query_fasta, paf_path, threads = 4, preset = "asm5")
     elapsed_time = time.time() - start_time
     print(f"Finished minimap2 in {elapsed_time:.2f} seconds.. Now loading reference sequences...")
 
-def summary_of_paf(paf_path, html = "alignment_summary.html"):
+def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
     """
     Parses .paf file and generates a summary table of alignment metrics and variant types.
     """
@@ -99,18 +99,31 @@ def summary_of_paf(paf_path, html = "alignment_summary.html"):
                     i += 1
 
             results.append({
-                "Query": query,
-                "Target": target,
-                "Aligned_bp": aln_len,
-                "Matches": matches,
-                "SNPs": snps,
-                "Indels": indels
+                "Query": query, #contig name for reference genome (in this case A. thaliana)
+                "Target": target, #contig name from the query genome (in this case A. lyrata)
+                "Map_q": aln_len, #mapping quality of base pairs that aligned
+                "Matches": matches, #number of exact matching base pairs 
+                "SNPs": snps, #number of single-nucleotide differences (in this case substitutions)
+                "Indels": indels #number of insertions and deletions 
             })
 
-    # Convert to pandas DataFrame and export as HTML
+    #Convert to pandas DataFrame and export as HTML
     df = pd.DataFrame(results)
-    df.to_html(html_out, index=False)
-    print(f"Summary written to: {html_out}")
+
+    #Apply df styling
+    styled = df.style\
+    .background_gradient(subset=["SNPs", "Indels"], cmap="Reds")\
+    .highlight_max(color="lightgreen", axis=0, subset=["Matches"])\
+    .format({"SNP_rate": "{:.2%}", "Indel_rate": "{:.2%}"})\
+    .set_caption("Minimap2 Alignment Summary")\
+    .set_table_styles([
+        {'selector': 'th', 'props': [('background-color', '#f2f2f2'), ('color', '#333'), ('font-size', '12px')]},
+        {'selector': 'caption', 'props': [('caption-side', 'top'), ('font-size', '16px'), ('font-weight', 'bold')]}
+        ])
+
+#Export styled df
+styled.to_html(html_out)
+print(f"Styled summary written to: {html_out}")
 
 def parse_args():
     """
@@ -133,13 +146,17 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
     #Step 2: Prepare file output paths
-    paf_path = args.out.replace(".vcf", ".paf")
-    html_out = args.out.replace(".vcf", "_summary.html")
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
+    paf_path = args.out
+    html_out = args.out.replace(".paf", "_summary.html")
+    os.makedirs(os.path.dirname(paf_path), exist_ok=True)
 
-    # Step 3: Run minimap2 + summarize PAF
+    #Step 3: Run minimap2 + summarize PAF
     run_minimap2(ref_fasta, query_fasta, paf_path, threads=args.threads, preset=args.preset)
     summary_of_paf(paf_path, html_out)
+
+    #Step 4. open the HTML summary in the default browser
+    os.system(f"open {html_out}")
+
 
 ## ========
 # EXAMPLE INPUT/OUTPUT 
