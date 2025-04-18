@@ -45,7 +45,7 @@ def run_minimap2(ref_fasta, query_fasta, paf_path, threads = 4):
     #run minimap2 and write output:
     with open(paf_path, "w") as paf_out:
         subprocess.run(
-            [minimap_path, "-t", str(threads), "-cx", args.preset, "--cs=short", ref_fasta, query_fasta]
+            [minimap_path, "-t", str(threads), "-cx", args.preset, "--cs=short", ref_fasta, query_fasta],
             stdout=paf_out,
             check=True
         )
