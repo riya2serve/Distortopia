@@ -37,7 +37,7 @@ def run_minimap2(ref_fasta, query_fasta, output_vcf, threads = 4):
     minimap_path = "/opt/homebrew/bin/minimap2"
     paf_path = output_vcf.replace(".vcf", ".paf")
 
-    print("\nRunning minimap2 with {threads} threads......")
+    print(f"Running minimap2 with {threads} threads......")
     start_time = time.time()
 
     with open(paf_path, "w") as paf_out:
@@ -97,31 +97,6 @@ def run_minimap2(ref_fasta, query_fasta, output_vcf, threads = 4):
 
     print(f"VCF written to: {output_vcf}")
 
-def gen_HTML(vcf_path, html_out = "snp_summary.html"):
-    """
-    Loads a user-generated VCF file, summarizes SNP per contig, exports a styled HTML table.
-    """ 
-    with open(vcf_path) as f:
-        lines = [line for line in f if not line.startswith("#")]
-
-    df = pd.read_csv(
-        StringIO("".join(lines)),
-        sep="\t", #separating columns 
-        names=["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"] #column names
-    )
-
-    # Filter biallelic SNPs
-    valid = {"A", "C", "G", "T"} #looking for base pairs
-    df = df[(df["REF"].isin(valid)) & (df["ALT"].isin(valid)) & (df["REF"] != df["ALT"])]
-
-    # Count SNPs per contig
-    summary = df["CHROM"].value_counts().reset_index()
-    summary.columns = ["CHROM", "SNP_COUNT"]
-
-    # Save to HTML with simple formatting
-    summary.to_html(html_out, index=False)
-    print(f"SNP summary table written to: {html_out}")
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Compare top contigs from two genomes by length or order")
     parser.add_argument("--ref-dir", required=True, help="Directory containing reference FASTAs")
@@ -130,7 +105,6 @@ def parse_args():
     parser.add_argument("--mode", choices=["length", "order"], default="length",
                         help="How to match contigs: by length (default) or order")
     parser.add_argument("--top-n", type=int, default=5, help="Number of contigs to compare (default: 5)")
-    parser.add_argument("--summary", action="store_true", help="Generate an HTML summary table of SNP counts per contig")
     parser.add_argument("--threads", type=int, default=4, help="Number of CPUs to use with minimap2 (default: 4)")
     return parser.parse_args()
 
@@ -142,10 +116,6 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
     run_minimap2(ref_fasta, query_fasta, args.out, threads=args.threads)
-
-    if args.summary:
-        html_out = args.out.replace(".vcf", "_summary.html")
-        gen_HTML(args.out, html_out)
 
 ## ========
 # EXAMPLE INPUT/OUTPUT 
