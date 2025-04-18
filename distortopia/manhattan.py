@@ -7,10 +7,17 @@ It bins SNPs into 10kb windows based on their position on each scaffold (contig)
 The result is one density plot per scaffold, showing how SNPs are distributed.
 '''
 
-def parse_for_snps(paf_path, bin_size=10000):
-	"""
-	Plot .paf file and count the SNPs per bin
-	"""
+import matplotlib.pyplot as plt
+import pandas as pd
+
+'''
+This script generates a genome-wide SNP density map from a .paf file.
+It bins SNPs into 10kb windows based on their position on each scaffold (contig).
+The result is one density plot per scaffold, showing how SNPs are distributed.
+'''
+
+# === PARSE .PAF FILE AND COUNT SNPs PER BIN ===
+def parse_paf_for_snps(paf_path, bin_size=10000):
     snp_data = []
 
     with open(paf_path) as f:
@@ -35,10 +42,8 @@ def parse_for_snps(paf_path, bin_size=10000):
     binned = df.groupby(["scaffold", "bin"])["snps"].sum().reset_index()
     return binned
 
+# === PLOT SNP DENSITY PER SCAFFOLD ===
 def plot_snp_density(binned_df):
-	"""
-	Plot SNP density per scaffold to build a "pseduochromosome"
-	"""
     scaffolds = binned_df["scaffold"].unique()
 
     for scaffold in scaffolds:
@@ -52,9 +57,10 @@ def plot_snp_density(binned_df):
         plt.tight_layout()
         plt.show()
 
+# === MAIN ===
 if __name__ == "__main__":
     paf_file = "genomes/athal_vs_alyr.paf"  # <- update path if needed
-    binned = parse_for_snps(paf_file)
+    binned = parse_paf_for_snps(paf_file)
     plot_snp_density(binned)
 
 
