@@ -121,9 +121,9 @@ def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
             {'selector': 'caption', 'props': [('caption-side', 'top'), ('font-size', '16px'), ('font-weight', 'bold')]}
         ])
 
-#Export styled df
-styled.to_html(html_out)
-print(f"Styled summary written to: {html_out}")
+    #Export styled df
+    styled.to_html(html_out)
+    print(f"Styled summary written to: {html_out}")
 
 def parse_args():
     """
