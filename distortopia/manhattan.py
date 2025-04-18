@@ -19,8 +19,8 @@ def parse_paf_for_snps(paf_path, bin_size=10000):
 	with open(paf_path) as f:
 		for line in f:
 			cols = line.strip().split('\t')
-            if len(cols) < 12:
-                continue
+			if len(cols) < 12:
+				continue
 
             query = cols[0]
             target = cols[5]
