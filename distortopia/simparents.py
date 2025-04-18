@@ -31,7 +31,7 @@ def choose_fasta(species_name, species_dir):
         except ValueError:
             print("Please enter a valid number.")
 
-def run_minimap2(ref_fasta, query_fasta, output_vcf):
+def run_minimap2(ref_fasta, query_fasta, output_vcf, threads = 4):
     script_dir = os.path.dirname(__file__)
     minimap_path = "/opt/homebrew/bin/minimap2"
     paf_path = output_vcf.replace(".vcf", ".paf")
