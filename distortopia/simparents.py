@@ -47,7 +47,7 @@ def run_minimap2(ref_fasta, query_fasta, output_vcf, threads = 4):
             check=True
         )
     elapsed_time = time.time() - start_time
-    print("Finished minimap2 in {elapsed:.2f} seconds.. Now loading reference sequences...")
+    print(f"Finished minimap2 in {elapsed:.2f} seconds.. Now loading reference sequences...")
 
     ref_seqs = {rec.id: str(rec.seq) for rec in SeqIO.parse(ref_fasta, "fasta")}
 
