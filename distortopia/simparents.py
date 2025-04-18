@@ -165,22 +165,17 @@ if __name__ == "__main__":
 User input should look something like this w/ argparse flags:
 '''
 #bash
-##python compare_fasta_snps.py \
-  ###--ref-dir user-data/Arabidopsis_thaliana/ncbi_dataset/data \
-  ###--query-dir user-data/Arabidopsis_lyrata/ncbi_dataset/data \
-  ###--out genomes/athal_vs_alyr_by_order.vcf \
-  ###--mode order \
-  ###--top-n 5
+##distortopia % python simparents.py \          
+  ###--ref-dir user-data/Arabidopsis_thaliana \
+  ###--query-dir user-data/Arabidopsis_lyrata \
+  ###--out genomes/athal_vs_alyr.paf \
+  ###--threads 8
 
-'''
-User output should be a VCF and an HTML (optional). 
-To generate the HTML user will need to use the --summary flag. 
-To view/open the HTML user should enter this command in their terminal:
-'''
+"""
+Recommend checking if your files are a reasonable size before committing to GitHub repo.
+Run this command in your terminal (note: file path might be slighlty different for each user)
+"""
 #bash
-##open genomes/athal_vs_alyr_by_order_summary.html
-
-
-
+##ls -lh genomes/athal_vs_alyr_summary.html
 
 
