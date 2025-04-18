@@ -112,13 +112,13 @@ def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
 
     #Apply df styling
     styled = df.style\
-    .background_gradient(subset=["SNPs", "Indels"], cmap="Reds")\
-    .highlight_max(color="lightgreen", axis=0, subset=["Matches"])\
-    .format({"SNP_rate": "{:.2%}", "Indel_rate": "{:.2%}"})\
-    .set_caption("Minimap2 Alignment Summary")\
-    .set_table_styles([
-        {'selector': 'th', 'props': [('background-color', '#f2f2f2'), ('color', '#333'), ('font-size', '12px')]},
-        {'selector': 'caption', 'props': [('caption-side', 'top'), ('font-size', '16px'), ('font-weight', 'bold')]}
+        .background_gradient(subset=["SNPs", "Indels"], cmap="Reds")\
+        .highlight_max(color="lightgreen", axis=0, subset=["Matches"])\
+        .format({"SNP_rate": "{:.2%}", "Indel_rate": "{:.2%}"})\
+        .set_caption("Minimap2 Alignment Summary")\
+        .set_table_styles([
+            {'selector': 'th', 'props': [('background-color', '#f2f2f2'), ('color', '#333'), ('font-size', '12px')]},
+            {'selector': 'caption', 'props': [('caption-side', 'top'), ('font-size', '16px'), ('font-weight', 'bold')]}
         ])
 
 #Export styled df
