@@ -2,21 +2,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 '''
-This script generates a genome-wide SNP density map from a .paf file.
-It bins SNPs into 10kb windows based on their position on each scaffold (contig).
-The result is one density plot per scaffold, showing how SNPs are distributed.
+This script reads a .paf file, counts SNPs from the `cs` tag,
+bins them by 10kb windows, and plots all scaffolds in a single
+pseudochromosome layout. Scaffolds are concatenated along the x-axis.
+Only high-SNP scaffolds are highlighted in red.
 '''
 
-import matplotlib.pyplot as plt
-import pandas as pd
-
-'''
-This script generates a genome-wide SNP density map from a .paf file.
-It bins SNPs into 10kb windows based on their position on each scaffold (contig).
-The result is one density plot per scaffold, showing how SNPs are distributed.
-'''
-
-# === PARSE .PAF FILE AND COUNT SNPs PER BIN ===
+# === PARSE PAF AND BIN SNPS ===
 def parse_paf_for_snps(paf_path, bin_size=10000):
     snp_data = []
 
@@ -27,40 +19,61 @@ def parse_paf_for_snps(paf_path, bin_size=10000):
                 continue
 
             target = cols[5]           # scaffold name
-            t_start = int(cols[7])    # alignment start position on target
+            t_start = int(cols[7])    # start position on target
             cs_tag = [c[5:] for c in cols[12:] if c.startswith("cs:Z:")]
 
             if cs_tag:
                 cs = cs_tag[0]
-                snps = cs.count("*")  # count SNPs as substitutions (*)
-
+                snps = cs.count("*")  # SNPs are marked as substitutions
                 bin_pos = (t_start // bin_size) * bin_size
                 snp_data.append((target, bin_pos, snps))
 
-    # convert to DataFrame
     df = pd.DataFrame(snp_data, columns=["scaffold", "bin", "snps"])
     binned = df.groupby(["scaffold", "bin"])["snps"].sum().reset_index()
     return binned
 
-# === PLOT SNP DENSITY PER SCAFFOLD ===
-def plot_snp_density(binned_df):
-    scaffolds = binned_df["scaffold"].unique()
+# === PLOT PSEUDOCHROMOSOME LAYOUT ===
+def plot_pseudochromosome(binned_df, highlight_threshold=250):
+    offset = 0
+    all_data = []
+    scaffold_offsets = {}
+    colors = []
 
-    for scaffold in scaffolds:
-        sub = binned_df[binned_df["scaffold"] == scaffold]
+    # choose colors
+    color_normal = 'lightgray'
+    color_highlight = 'red'
 
-        plt.figure(figsize=(10, 4))
-        plt.bar(sub["bin"], sub["snps"], width=10000, color='teal', edgecolor='black')
-        plt.title(f"SNP Density - {scaffold}")
-        plt.xlabel("Position (bp)")
-        plt.ylabel("SNPs per 10kb")
-        plt.tight_layout()
-        plt.show()
+    # shift bins for each scaffold to get continuous x-axis
+    for scaffold in binned_df["scaffold"].unique():
+        sub = binned_df[binned_df["scaffold"] == scaffold].copy()
+        sub["x"] = sub["bin"] + offset
+        all_data.append(sub)
+        scaffold_offsets[scaffold] = offset
+        max_snp = sub["snps"].max()
+
+        # red if max SNPs in a bin is high
+        if max_snp >= highlight_threshold:
+            colors.append(color_highlight)
+        else:
+            colors.append(color_normal)
+
+        offset += sub["bin"].max() + 10000  # add gap between scaffolds
+
+    final = pd.concat(all_data)
+    fig, ax = plt.subplots(figsize=(12, 4))
+
+    for i, (scaffold, subdf) in enumerate(final.groupby("scaffold")):
+        ax.bar(subdf["x"], subdf["snps"], width=10000,
+               color=colors[i], edgecolor='black')
+
+    ax.set_title("Genome-wide SNP Density (pseudochromosome layout)")
+    ax.set_xlabel("Pseudochromosome Position (bp)")
+    ax.set_ylabel("SNPs per 10kb")
+    plt.tight_layout()
+    plt.show()
 
 # === MAIN ===
 if __name__ == "__main__":
-    paf_file = "genomes/athal_vs_alyr.paf"  # <- update path if needed
+    paf_file = "genomes/athal_vs_alyr.paf"
     binned = parse_paf_for_snps(paf_file)
-    plot_snp_density(binned)
-
-
+    plot_pseudochromosome(binned)
