@@ -1,25 +1,17 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import re
-'''
-This script generates a genome-wide variant density/positional map. 
-It uses the .paf file, and associates SNP positions and contigs. 
-It requires users have: (1) .paf file containing target contig names and (2) SNP positions 
-or approximate locations. These data will allow users to plot each variant along the 
-genomic x-axis, grouped by contig.
 
-The script groups SNPs by scaffold (e.g. chromosome/contig identifiers from .paf file) and
-bins them into 10kb windows for plotting SNP density. Each scaffold is plotted separately 
-for clarity.
+'''
+This script generates a genome-wide SNP density map from a .paf file.
+It bins SNPs into 10kb windows based on their position on each scaffold (contig).
+The result is one density plot per scaffold, showing how SNPs are distributed.
 '''
 
-import matplotlib.pyplot as plt
-import pandas as pd
-import re
-
-# === FUNCTION TO PARSE PAF FILE AND COUNT SNPS IN 10KB BINS ===
-def parse_paf_for_snps(paf_path, bin_size=10000):
-    data = []
+def parse_for_snps(paf_path, bin_size=10000):
+	"""
+	Plot .paf file and count the SNPs per bin
+	"""
+    snp_data = []
 
     with open(paf_path) as f:
         for line in f:
@@ -27,41 +19,26 @@ def parse_paf_for_snps(paf_path, bin_size=10000):
             if len(cols) < 12:
                 continue
 
-            query = cols[0]
-            target = cols[5]
-            target_start = int(cols[7])
-            target_end = int(cols[8])
-            aln_len = int(cols[11])
+            target = cols[5]           # scaffold name
+            t_start = int(cols[7])    # alignment start position on target
+            cs_tag = [c[5:] for c in cols[12:] if c.startswith("cs:Z:")]
 
-            # Extract the cs tag (variant annotation)
-            cs_tag = ""
-            for col in cols[12:]:
-                if col.startswith("cs:Z:"):
-                    cs_tag = col[5:]
-                    break
+            if cs_tag:
+                cs = cs_tag[0]
+                snps = cs.count("*")  # count SNPs as substitutions (*)
 
-            # Count SNPs in cs tag
-            snp_count = cs_tag.count("*")
+                bin_pos = (t_start // bin_size) * bin_size
+                snp_data.append((target, bin_pos, snps))
 
-            # Store info for every alignment
-            data.append({
-                "scaffold": target,
-                "start": target_start,
-                "end": target_end,
-                "snps": snp_count
-            })
-
-    df = pd.DataFrame(data)
-
-    # Add bin column (bin start coordinate)
-    df["bin"] = (df["start"] // bin_size) * bin_size
-
-    # Group by scaffold and bin, summing SNPs
+    # convert to DataFrame
+    df = pd.DataFrame(snp_data, columns=["scaffold", "bin", "snps"])
     binned = df.groupby(["scaffold", "bin"])["snps"].sum().reset_index()
     return binned
 
-# === FUNCTION TO PLOT ===
 def plot_snp_density(binned_df):
+	"""
+	Plot SNP density per scaffold to build a "pseduochromosome"
+	"""
     scaffolds = binned_df["scaffold"].unique()
 
     for scaffold in scaffolds:
@@ -71,14 +48,13 @@ def plot_snp_density(binned_df):
         plt.bar(sub["bin"], sub["snps"], width=10000, color='teal', edgecolor='black')
         plt.title(f"SNP Density - {scaffold}")
         plt.xlabel("Position (bp)")
-        plt.ylabel("SNP count (per 10kb)")
+        plt.ylabel("SNPs per 10kb")
         plt.tight_layout()
         plt.show()
 
-# === MAIN EXECUTION ===
 if __name__ == "__main__":
-    paf_file = "genomes/athal_vs_alyr.paf"  # <- Adjust path if needed
-    binned_snps = parse_paf_for_snps(paf_file)
-    plot_snp_density(binned_snps)
+    paf_file = "genomes/athal_vs_alyr.paf"  # <- update path if needed
+    binned = parse_for_snps(paf_file)
+    plot_snp_density(binned)
 
 
