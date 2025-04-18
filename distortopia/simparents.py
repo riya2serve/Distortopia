@@ -51,7 +51,7 @@ def run_minimap2(ref_fasta, query_fasta, paf_path, threads = 4, preset = "asm5")
         )
 
     elapsed_time = time.time() - start_time
-    print(f"Finished minimap2 in {elapsed:.2f} seconds.. Now loading reference sequences...")
+    print(f"Finished minimap2 in {elapsed_time:.2f} seconds.. Now loading reference sequences...")
 
 def summary_of_paf(paf_path, html = "alignment_summary.html"):
     """
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     # Step 3: Run minimap2 + summarize PAF
     run_minimap2(ref_fasta, query_fasta, paf_path, threads=args.threads, preset=args.preset)
-    summarize_paf(paf_path, html_out)
+    summary_of_paf(paf_path, html_out)
 
 ## ========
 # EXAMPLE INPUT/OUTPUT 
