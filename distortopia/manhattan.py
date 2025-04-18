@@ -13,14 +13,19 @@ bins them into 10kb windows for plotting SNP density. Each scaffold is plotted s
 for clarity.
 '''
 
-def parse_paf_for_snps(paf_path, bin_size=10000):
+import matplotlib.pyplot as plt
+import pandas as pd
+import re
 
-	data = []
-	with open(paf_path) as f:
-		for line in f:
-			cols = line.strip().split('\t')
-			if len(cols) < 12:
-				continue
+# === FUNCTION TO PARSE PAF FILE AND COUNT SNPS IN 10KB BINS ===
+def parse_paf_for_snps(paf_path, bin_size=10000):
+    data = []
+
+    with open(paf_path) as f:
+        for line in f:
+            cols = line.strip().split('\t')
+            if len(cols) < 12:
+                continue
 
             query = cols[0]
             target = cols[5]
@@ -28,17 +33,17 @@ def parse_paf_for_snps(paf_path, bin_size=10000):
             target_end = int(cols[8])
             aln_len = int(cols[11])
 
-            #Extract cs tags (variant annotation)
+            # Extract the cs tag (variant annotation)
             cs_tag = ""
             for col in cols[12:]:
                 if col.startswith("cs:Z:"):
                     cs_tag = col[5:]
                     break
 
-            #Count SNPs using cs tag
+            # Count SNPs in cs tag
             snp_count = cs_tag.count("*")
 
-            #Store for every alignment
+            # Store info for every alignment
             data.append({
                 "scaffold": target,
                 "start": target_start,
@@ -48,13 +53,14 @@ def parse_paf_for_snps(paf_path, bin_size=10000):
 
     df = pd.DataFrame(data)
 
-    # dd bin column (bin start coordinate)
+    # Add bin column (bin start coordinate)
     df["bin"] = (df["start"] // bin_size) * bin_size
 
-    #Group by scaffold and bin, sum SNPs
+    # Group by scaffold and bin, summing SNPs
     binned = df.groupby(["scaffold", "bin"])["snps"].sum().reset_index()
     return binned
 
+# === FUNCTION TO PLOT ===
 def plot_snp_density(binned_df):
     scaffolds = binned_df["scaffold"].unique()
 
@@ -71,7 +77,6 @@ def plot_snp_density(binned_df):
 
 # === MAIN EXECUTION ===
 if __name__ == "__main__":
-
     paf_file = "genomes/athal_vs_alyr.paf"  # <- Adjust path if needed
     binned_snps = parse_paf_for_snps(paf_file)
     plot_snp_density(binned_snps)
