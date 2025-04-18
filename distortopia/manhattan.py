@@ -14,14 +14,11 @@ for clarity.
 '''
 
 def parse_paf_for_snps(paf_path, bin_size=10000):
-	"""
-	Parses user-provided .paf file and counts SNPs into 10kb bins
-	"""
-    data = []
 
-    with open(paf_path) as f:
-        for line in f:
-            cols = line.strip().split('\t')
+	data = []
+	with open(paf_path) as f:
+		for line in f:
+			cols = line.strip().split('\t')
             if len(cols) < 12:
                 continue
 
@@ -74,7 +71,7 @@ def plot_snp_density(binned_df):
 
 # === MAIN EXECUTION ===
 if __name__ == "__main__":
-	
+
     paf_file = "genomes/athal_vs_alyr.paf"  # <- Adjust path if needed
     binned_snps = parse_paf_for_snps(paf_file)
     plot_snp_density(binned_snps)
