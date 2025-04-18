@@ -140,7 +140,7 @@ if __name__ == "__main__":
     query_fasta = choose_fasta("Species 2", args.query_dir)
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
-    run_minimap2(ref_fasta, query_fasta, args.out)
+    run_minimap2(ref_fasta, query_fasta, args.out, threads=args.threads)
 
     if args.summary:
         html_out = args.out.replace(".vcf", "_summary.html")
