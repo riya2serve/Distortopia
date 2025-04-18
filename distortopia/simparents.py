@@ -1,6 +1,7 @@
 import os
 import glob
 import subprocess
+import time 
 from Bio import SeqIO
 from io import StringIO #to parse VCF text input into pandas 
 import argparse #to establish command-line flags for users
@@ -37,7 +38,7 @@ def run_minimap2(ref_fasta, query_fasta, output_vcf, threads = 4):
     paf_path = output_vcf.replace(".vcf", ".paf")
 
     print("\nRunning minimap2 with {threads} threads......")
-    start_time = time.time
+    start_time = time.time()
 
     with open(paf_path, "w") as paf_out:
         subprocess.run(
