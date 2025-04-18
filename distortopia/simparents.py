@@ -33,7 +33,7 @@ def choose_fasta(species_name, species_dir):
         except ValueError:
             print("Please enter a valid number.")
 
-def run_minimap2(ref_fasta, query_fasta, paf_path, threads = 4):
+def run_minimap2(ref_fasta, query_fasta, paf_path, threads = 4, preset = "asm5"):
     """
     Runs minimpa2 to align two genome FASTA files and writes output to .paf file
     """
@@ -45,7 +45,7 @@ def run_minimap2(ref_fasta, query_fasta, paf_path, threads = 4):
     #run minimap2 and write output:
     with open(paf_path, "w") as paf_out:
         subprocess.run(
-            [minimap_path, "-t", str(threads), "-cx", args.preset, "--cs=short", ref_fasta, query_fasta],
+            [minimap_path, "-t", str(threads), "-cx", preset, "--cs=short", ref_fasta, query_fasta],
             stdout=paf_out,
             check=True
         )
@@ -121,7 +121,7 @@ def parse_args():
     parser.add_argument("--query-dir", required=True, help="Directory containing query FASTAs")
     parser.add_argument("--out", required=True, help="Output prefix (used to create .paf and .html)")
     parser.add_argument("--threads", type=int, default=4, help="Number of CPUs to use with minimap2 (default: 4)")
-    parser.add_argument("--preset", default = "asm5", help = "minimap2 preset (default: asm5)")
+    parser.add_argument("--preset", default = "asm5", help = "minimap2 preset (e.g., asm5, asm10, splice)")
     return parser.parse_args()
 
 if __name__ == "__main__":
