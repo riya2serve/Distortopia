@@ -33,17 +33,20 @@ def choose_fasta(species_name, species_dir):
 
 def run_minimap2(ref_fasta, query_fasta, output_vcf):
     script_dir = os.path.dirname(__file__)
-    minimap_path = os.path.join(script_dir, "minimap2", "minimap2-bin")  # <- this is right!
+    minimap_path = "/opt/homebrew/bin/minimap2"
     paf_path = output_vcf.replace(".vcf", ".paf")
 
-    print("\nRunning minimap2...")
+    print("\nRunning minimap2 with {threads} threads......")
+    start_time = time.time
+
     with open(paf_path, "w") as paf_out:
         subprocess.run(
-            [minimap_path, "-t", "4", "-cx", "asm5", ref_fasta, query_fasta],
+            [minimap_path, "-t", str(threads), "-cx", "asm5", ref_fasta, query_fasta],
             stdout=paf_out,
             check=True
         )
-    print("Finished minimap2. Now loading reference sequences...")
+    elapsed_time = time.time() - start_time
+    print("Finished minimap2 in {elapsed:.2f} seconds.. Now loading reference sequences...")
 
     ref_seqs = {rec.id: str(rec.seq) for rec in SeqIO.parse(ref_fasta, "fasta")}
 
@@ -127,6 +130,7 @@ def parse_args():
                         help="How to match contigs: by length (default) or order")
     parser.add_argument("--top-n", type=int, default=5, help="Number of contigs to compare (default: 5)")
     parser.add_argument("--summary", action="store_true", help="Generate an HTML summary table of SNP counts per contig")
+    parser.add_argument("--threads", type=int, default=4, help="Number of CPUs to use with minimap2 (default: 4)")
     return parser.parse_args()
 
 if __name__ == "__main__":
