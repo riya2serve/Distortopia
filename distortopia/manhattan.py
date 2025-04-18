@@ -39,32 +39,28 @@ def plot_pseudochromosome(binned_df, highlight_threshold=250):
     scaffold_offsets = {}
     colors = []
 
-    # choose colors
-    color_normal = 'lightgray'
+    # pick colors
+    color_normal = 'gray'
     color_highlight = 'red'
 
-    # shift bins for each scaffold to get continuous x-axis
-    for scaffold in binned_df["scaffold"].unique():
+    # Sort scaffolds by SNP count (helps avoid clutter)
+    scaffold_order = binned_df.groupby("scaffold")["snps"].sum().sort_values(ascending=False).index
+
+    fig, ax = plt.subplots(figsize=(14, 5))  # Wider layout
+
+    for i, scaffold in enumerate(scaffold_order):
         sub = binned_df[binned_df["scaffold"] == scaffold].copy()
         sub["x"] = sub["bin"] + offset
         all_data.append(sub)
-        scaffold_offsets[scaffold] = offset
+
         max_snp = sub["snps"].max()
+        color = color_highlight if max_snp > highlight_threshold else color_normal
 
-        # red if max SNPs in a bin is high
-        if max_snp >= highlight_threshold:
-            colors.append(color_highlight)
-        else:
-            colors.append(color_normal)
+        # plot bar
+        ax.bar(sub["x"], sub["snps"], width=10000, color=color, edgecolor='black')
 
-        offset += sub["bin"].max() + 10000  # add gap between scaffolds
-
-    final = pd.concat(all_data)
-    fig, ax = plt.subplots(figsize=(12, 4))
-
-    for i, (scaffold, subdf) in enumerate(final.groupby("scaffold")):
-        ax.bar(subdf["x"], subdf["snps"], width=10000,
-               color=colors[i], edgecolor='black')
+        # add vertical line to separate scaffolds
+        offset += sub["bin"].max() + 50000  # more spacing between scaffolds
 
     ax.set_title("Genome-wide SNP Density (pseudochromosome layout)")
     ax.set_xlabel("Pseudochromosome Position (bp)")
