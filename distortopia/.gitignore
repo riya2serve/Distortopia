@@ -11,3 +11,7 @@ user-data/
 
 # Ignore all generated VCFs
 genomes/*.vcf 
+
+# Ignore all .paf files except for known small examples
+*.paf
+!genomes/athal_vs_alyr.paf
