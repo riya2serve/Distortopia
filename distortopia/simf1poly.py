@@ -119,8 +119,8 @@ def parse_args():
     Users can provide paths, number of threads, and minimap2 settings.
     """
     parser = argparse.ArgumentParser(description="Simulate F1 hybrid using SNP-rich recombination zones")
-    parser.add_argument("--parent1", required=True, help="path to parent 1 FASTA")
-    parser.add_argument("--parent2", required=True, help="path to parent 2 FASTA")
+    parser.add_argument("--ref-dir", required=True, help="path to parent 1 FASTA")
+    parser.add_argument("--query-dir", required=True, help="path to parent 2 FASTA")
     parser.add_argument("--paf", required=True, help="path to .paf file output from minimap2 with cs:Z tags")
     parser.add_argument("--out", required=True, help="path to output hybrid FASTA")
     parser.add_argument("--recomb", type=int, default=1, help="number of recombination events per contig")
