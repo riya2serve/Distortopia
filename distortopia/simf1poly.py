@@ -25,28 +25,28 @@ def extract_from_paf(paf_path, max_snp_gap=1000):
                     cs_tag = field[5:]
                     break
 
-            snps = []
-            pos = ref_start
-            i = 0
+            snps = [] #initialize list to collect parsed cs:Z tags 
+            pos = ref_start #start at beginning of reference genome (in this case A. thaliana)
+            i = 0 #start count at zero
             while i < len(cs_tag):
-                if cs_tag[i] == ":":
-                    i += 1
+                if cs_tag[i] == ":": #exact base-pair match
+                    i += 1 #add one to counter
                     num = ""
                     while i < len(cs_tag) and cs_tag[i].isdigit():
                         num += cs_tag[i]
-                        i += 1
+                        i += 1 
                     pos += int(num)
-                elif cs_tag[i] == "*":
+                elif cs_tag[i] == "*": #single-nucleotide polymorphism
                     snps.append(pos)
                     pos += 1
                     i += 3
-                elif cs_tag[i] == "-":
-                    i += 1
+                elif cs_tag[i] == "-": #deletion
+                    i += 1 #add 1 to counter
                     while i < len(cs_tag) and cs_tag[i].isalpha():
                         i += 1
                     pos += 1
-                elif cs_tag[i] == "+":
-                    i += 1
+                elif cs_tag[i] == "+": #insertion
+                    i += 1 #add 1 to counter
                     while i < len(cs_tag) and cs_tag[i].isalpha():
                         i += 1
                 else:
@@ -58,7 +58,7 @@ def extract_from_paf(paf_path, max_snp_gap=1000):
                 start = snps[0]
                 end = start
                 for s in snps[1:]:
-                    if s - end <= max_snp_gap:
+                    if s - end <= max_snp_gap: #max_snp_gap is the ____
                         end = s
                     else:
                         snp_zones[ref_contig].append((start, end))
@@ -110,10 +110,10 @@ def generate_f1_hybrid(parent1_fasta, parent2_fasta, snp_zones, out_fasta, recom
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Simulate F1 hybrid using SNP-rich recombination zones")
-    parser.add_argument("--parent1", required=True, help="Path to parent 1 FASTA")
-    parser.add_argument("--parent2", required=True, help="Path to parent 2 FASTA")
-    parser.add_argument("--paf", required=True, help="PAF file output from minimap2 with cs:Z tags")
-    parser.add_argument("--out", required=True, help="Path to output hybrid FASTA")
+    parser.add_argument("--parent1", required=True, help="path to parent 1 FASTA")
+    parser.add_argument("--parent2", required=True, help="path to parent 2 FASTA")
+    parser.add_argument("--paf", required=True, help="path to .paf file output from minimap2 with cs:Z tags")
+    parser.add_argument("--out", required=True, help="path to output hybrid FASTA")
     parser.add_argument("--recomb", type=int, default=1, help="Number of recombination events per contig")
     return parser.parse_args()
 
@@ -126,11 +126,9 @@ if __name__ == "__main__":
     print("Building synthetic F1 hybrid...")
     generate_f1_hybrid(args.parent1, args.parent2, snp_zones, args.out, recomb_per_contig=args.recomb)
 
-
-
-
-
-
+## ==========
+# EXAMPLE CLI 
+## ==========
 
 """
 def run_simulation(args):
