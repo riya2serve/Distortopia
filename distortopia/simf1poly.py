@@ -68,9 +68,21 @@ def extract_from_paf(paf_path, max_snp_gap=1000):
                 snp_zones[ref_contig].append((start, end)) #add zones
 
     return snp_zones #return dictionary of "recombination zones" per contig
-    """results.append({
-                "Query": ...
+
+def get_contig_mapping(paf_path):
     """
+    Builds dictionary mapping query contigs to target contigs using the .paf file.
+    """
+    mapping = {}
+    with open(paf_path) as f:
+        for line in f:
+            cols = line.strip().split("\t")
+            if len(cols) >= 6:
+                query = cols[0]
+                target = cols[5]
+                if query not in mapping:
+                    mapping[query] = target
+    return mapping
 
 def generate_f1_hybrid(parent1_fasta, parent2_fasta, snp_zones, out_fasta, recomb_per_contig=1):
     """
@@ -82,9 +94,9 @@ def generate_f1_hybrid(parent1_fasta, parent2_fasta, snp_zones, out_fasta, recom
 
     hybrid_records = [] #initializing list to store hybrid contigs 
 
-    for contig in parent1:
-        if contig not in parent2:
-            continue #skip contigs that are not shared by both parents 
+    for query_contig, target_contig in contig_map.items():
+        if target_contig not in parent1 or query_contig not in parent2:
+            continue
 
         seq1 = parent1[contig].seq #parent 1 sequence
         seq2 = parent2[contig].seq #parent 2 sequence 
@@ -132,13 +144,22 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    #Step 1. extract SNP regions 
     print("Parsing .paf and extracting SNP zones...")
     snp_zones = extract_from_paf(args.paf)
 
-    print("Building synthetic F1 hybrid...")
-    generate_f1_hybrid(args.ref_dir, args.query_dir, snp_zones, args.out, recomb_per_contig=args.recomb)
+    print("Mapping query contigs to target contigs...")
+    contig_map = get_contig_mapping(args.paf)
 
+    print("Building synthetic F1 hybrid...")
+    generate_f1_hybrid(
+        args.ref,
+        args.query,
+        snp_zones,
+        args.out,
+        contig_map,
+        recomb_per_contig=args.recomb
+    )
+    
 ## ==========
 # EXAMPLE CLI 
 ## ==========
