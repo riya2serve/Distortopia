@@ -73,7 +73,7 @@ def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
             #searches for cs tag -- encodes for SNPS, indels, matches, etc. 
             cs_tag = ""
             for col in cols[12:]:
-                if col.startswith("cs:Z:"):
+                if col.startswith("cs:Z:"): #encodes the alignment at the base-pair level
                     cs_tag = col[5:] #extracts content associated with cs tag 
                     break
 
@@ -181,4 +181,13 @@ Run this command in your terminal (note: file path might be slighlty different f
 #bash
 ##ls -lh genomes/athal_vs_alyr_summary.html
 
+"""
+Understand the cs:Z tag
+"""
+#bash
+##cs:Z::50*at:12*gc-aaa+ttt:20
+###: — exact match of length N
+###*at — SNP (A in ref, T in query)
+###-aaa — deletion in the query
+###+ttt — insertion in the query
 
