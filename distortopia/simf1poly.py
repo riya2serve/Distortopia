@@ -1,7 +1,7 @@
-import argparse
+import argparse #allows for command-line arguments/flags from/for users
 import random
 from collections import defaultdict
-from Bio import SeqIO
+from Bio import SeqIO #BioPython module for reading and writing sequence files 
 
 def extract_from_paf(paf_path, max_snp_gap=1000):
     """
@@ -114,7 +114,7 @@ def parse_args():
     parser.add_argument("--parent2", required=True, help="path to parent 2 FASTA")
     parser.add_argument("--paf", required=True, help="path to .paf file output from minimap2 with cs:Z tags")
     parser.add_argument("--out", required=True, help="path to output hybrid FASTA")
-    parser.add_argument("--recomb", type=int, default=1, help="Number of recombination events per contig")
+    parser.add_argument("--recomb", type=int, default=1, help="number of recombination events per contig")
     return parser.parse_args()
 
 if __name__ == "__main__":
