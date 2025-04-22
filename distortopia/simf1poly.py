@@ -134,7 +134,7 @@ if __name__ == "__main__":
     snp_zones = extract_from_paf(args.paf)
 
     print("Building synthetic F1 hybrid...")
-    generate_f1_hybrid(args.parent1, args.parent2, snp_zones, args.out, recomb_per_contig=args.recomb)
+    generate_f1_hybrid(args.ref_dir, args.query_dir, snp_zones, args.out, recomb_per_contig=args.recomb)
 
 ## ==========
 # EXAMPLE CLI 
