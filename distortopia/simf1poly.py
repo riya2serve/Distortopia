@@ -68,6 +68,9 @@ def extract_from_paf(paf_path, max_snp_gap=1000):
                 snp_zones[ref_contig].append((start, end)) #add zones
 
     return snp_zones #return dictionary of "recombination zones" per contig
+    """results.append({
+                "Query": ...
+    """
 
 def generate_f1_hybrid(parent1_fasta, parent2_fasta, snp_zones, out_fasta, recomb_per_contig=1):
     """

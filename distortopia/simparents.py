@@ -80,7 +80,7 @@ def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
             matches, snps, indels = 0, 0, 0 #initializing counters for these 
             i = 0
             while i < len(cs_tag):
-                if cs_tag[i] == ":":
+                if cs_tag[i] == ":": #exact base-pair matches
                     # Exact match of length
                     i += 1
                     num = ""
@@ -88,10 +88,10 @@ def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
                         num += cs_tag[i]
                         i += 1
                     matches += int(num) #match sequence length 
-                elif cs_tag[i] == "*":
+                elif cs_tag[i] == "*": #base-pair substitution
                     snps += 1 #one substitution 
                     i += 3  #skip ref + alt bases
-                elif cs_tag[i] in "+-":
+                elif cs_tag[i] in "+-": #base-pair insertion or deletion
                     indels += 1 #one insertion or deletion 
                     i += 1
                     while i < len(cs_tag) and cs_tag[i].isalpha():
