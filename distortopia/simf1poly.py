@@ -2,9 +2,9 @@ import os
 import random #for random number gneration (will use for SNP positions)
 import argparse
 
-"""Simulate F1 hybrid from two parental VCFs."""
-
-"""Maybe consider adding these variants to a CSV. Output CSV could have the position and ratio"""
+"""Simulate F1 hybrid from two parental FASTA files.
+Maybe consider adding these variants to a CSV. Output CSV could have the position and ratio
+"""
 
 def run_simulation(args):
     parent1 = load_vcf(args.parent1) #this VCF generated from `simparents.py` script 
