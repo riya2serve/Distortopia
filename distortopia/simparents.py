@@ -99,16 +99,16 @@ def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
                 elif cs_tag[i] == "+": #base-pair insertion
                     indels += 1
                     i += 1
-                        while i < len(cs_tag) and cs_tag[i].isalpha():
-                            i += 1
+                    while i < len(cs_tag) and cs_tag[i].isalpha():
+                        i += 1
                 elif cs_tag[i] == "-": #base-pair deletion
                     indels += 1
                     i += 1
                     del_len = 0
-                        while i < len(cs_tag) and cs_tag[i].isalpha():
-                            del_len += 1
-                            i += 1
-                            ref_pos += del_len
+                    while i < len(cs_tag) and cs_tag[i].isalpha():
+                        del_len += 1
+                        i += 1
+                        ref_pos += del_len
                 else:
                     i += 1 #catch all
             #appending all metrics as a dictionary -- key:value
