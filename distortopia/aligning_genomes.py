@@ -35,7 +35,7 @@ def parse_args():
 
 if __name__ == "__main__":
 	args = parse_args()  # <--- call and assign it here
-	
+
 	run_minimap2(args.ref_dir, args.query_dir, args.out, args.mode)
 
 ## ==========
@@ -51,7 +51,11 @@ Note: SAM mode is useful if user is seeking to view hybrid genome using IGV
   ###--query F1_hybrid.fna \
   ###--out hybrid_vs_ref.paf
 
-
+"""
+Users can run this script as many times, depending on how many reference genomes they want to compare
+their F1 haploid genomes to.
+Note: generated .paf files should have different names, so as to not overwrite each time.
+"""
 
 
 
