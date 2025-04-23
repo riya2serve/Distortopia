@@ -124,6 +124,8 @@ def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
 
     #converts dictionary results to pandas DataFrame
     df = pd.DataFrame(results)
+    #exporting raw SNP position data to a TSV for F1 simulation!
+    df[["Query", "Target", "SNP_Positions"]].to_csv("snp_positions.tsv", sep="\t", index=False)
 
     #applies color styling to emphasize SNP/indel levels + highest match
     styled = df.style\
