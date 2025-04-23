@@ -177,15 +177,21 @@ if __name__ == "__main__":
 ## ==========
 # EXAMPLE CLI 
 ## ==========
-'''
+"""
 User input should look something like this w/ argparse flags:
+"""
+
+#bash
+##python simparents.py \
+###--ref-dir user-data/Arabidopsis_thaliana \
+###--query-dir user-data/Arabidopsis_lyrata \
+###--out genomes/athal_vs_alyr.paf \
+###--threads 8
+'''
+A safer option is as follows:
 '''
 #bash
-##distortopia % python simparents.py \          
-  ###--ref-dir user-data/Arabidopsis_thaliana \
-  ###--query-dir user-data/Arabidopsis_lyrata \
-  ###--out genomes/athal_vs_alyr.paf \
-  ###--threads 8
+## python simparents.py --ref-dir user-data/Arabidopsis_thaliana --query-dir user-data/Arabidopsis_lyrata --out genomes/athal_vs_alyr.paf --threads 8
 
 """
 Recommend checking if your files are a reasonable size before committing to GitHub repo.
