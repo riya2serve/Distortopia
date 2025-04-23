@@ -53,8 +53,11 @@ Note: SAM mode is useful if user is seeking to view hybrid genome using IGV
 
 """
 Users can run this script as many times, depending on how many reference genomes they want to compare
-their F1 haploid genomes to.
-Note: generated .paf files should have different names, so as to not overwrite each time.
+their F1 haploid genomes to. Generated .paf files should have different names, so as to not overwrite each time.
+
+To visualize alignment, users should navigate to <https://dgenies.toulouse.inra.fr>. 
+D-genies is a free, open-source tool to compare two genomes. It supports large genomes and allows
+users to interact with the dot plot to improve the visualisation.
 """
 
 
