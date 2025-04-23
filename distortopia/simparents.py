@@ -118,7 +118,7 @@ def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
                 "Map_q": aln_len, #mapping quality of base pairs that aligned
                 "Matches": matches, #number of exact matching base pairs 
                 "SNPs": snps, #number of single-nucleotide differences (in this case substitutions)
-                "Indels": indels #number of insertions and deletions
+                "Indels": indels, #number of insertions and deletions
                 "SNP_Positions": ", ".join(map(str, snp_positions))  # NEW
             })
 
