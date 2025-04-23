@@ -56,6 +56,7 @@ def run_minimap2(ref_fasta, query_fasta, paf_path, threads = 4, preset = "asm5")
 def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
     """
     Parses a .paf file to extract alignment metrics and variant types, and outputs a stylized HTML table.
+    Tracks reference coordinates for SNPs while parsing the cs:Z tag.
     """
     results = [] #initializes list to collect/store parsed results
 
@@ -77,27 +78,39 @@ def summary_of_paf(paf_path, html_out = "alignment_summary.html"):
                     cs_tag = col[5:] #extracts content associated with cs tag 
                     break
 
-            matches, snps, indels = 0, 0, 0 #initializing counters for these 
+            matches, snps, indels = 0, 0, 0
+            ref_pos = int(cols[7])  # start position on the target
+            snp_positions = []  # to store positions of each SNP
             i = 0
             while i < len(cs_tag):
                 if cs_tag[i] == ":": #exact base-pair matches
-                    # Exact match of length
                     i += 1
                     num = ""
                     while i < len(cs_tag) and cs_tag[i].isdigit():
                         num += cs_tag[i]
                         i += 1
-                    matches += int(num) #match sequence length 
+                    matches += int(num) #matches sequence length
+                    ref_pos += int(num)
                 elif cs_tag[i] == "*": #base-pair substitution
-                    snps += 1 #one substitution 
-                    i += 3  #skip ref + alt bases
-                elif cs_tag[i] in "+-": #base-pair insertion or deletion
-                    indels += 1 #one insertion or deletion 
+                    snps += 1
+                    snp_positions.append(ref_pos)
+                    ref_pos += 1
+                    i += 3 #skips ref and alt bases
+                elif cs_tag[i] == "+": #base-pair insertion
+                    indels += 1
                     i += 1
+                        while i < len(cs_tag) and cs_tag[i].isalpha():
+                            i += 1
+                elif cs_tag[i] == "-": #base-pair deletion
+                    indels += 1
+                    i += 1
+                    del_len = 0
                     while i < len(cs_tag) and cs_tag[i].isalpha():
-                        i += 1 #skips inserted/deleted sequences 
+                        del_len += 1
+                        i += 1
+                        ref_pos += del_len
                 else:
-                    i += 1 #catches all
+                    i += 1 #catch all
             #appending all metrics as a dictionary -- key:value
             results.append({
                 "Query": query, #contig name for reference genome (in this case A. thaliana)
