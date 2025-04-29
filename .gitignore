@@ -20,7 +20,7 @@ __pycache__/
 .vscode/
 
 #ignore downloaded genome files
-user-data/
+input-data/
 *.fna.gz
 *.gff.gz
 *.fasta
@@ -36,7 +36,7 @@ genomes/*.vcf
 
 #ignore all .paf files except for known small examples
 *.paf
-!genomes/athal_vs_alyr.paf
+!output-files/athal_vs_alyr.paf
 
 #ignore generated HTML summaries
-genomes/*.html
+output-files/*.html
