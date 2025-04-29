@@ -1,7 +1,25 @@
-# Ignore egg metadata
-*.egg-info/
+#macOS system files
+.DS_Store
 
-# Ignore downloaded genome files
+#ignore Python packaging files
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+#Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# RStudio files
+.Rhistory
+.RData
+.Rproj.user/
+
+#VSCode settings
+.vscode/
+
+#ignore downloaded genome files
 user-data/
 *.fna.gz
 *.gff.gz
@@ -9,12 +27,9 @@ user-data/
 *.fna
 *.gff
 
-# Ignore all generated VCFs
+#ignore all generated VCFs
 genomes/*.vcf 
 
-# Ignore all .paf files except for known small examples
+#ignore all .paf files except for known small examples
 *.paf
 !genomes/athal_vs_alyr.paf
-
-#add .DS_Store to .gitignore (build artifacts)
-.DS_Store
