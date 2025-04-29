@@ -1,7 +1,7 @@
 
 # Distortopia
 
-Simulating hybrid genomes and detecting segregation distortion
+Simulating F1 Hybrids and Detecting Segregation Distortion from Genomic Data
 
 ## Project Overview
 Distortopia is a command-line toolkit for simulating haploid F1 hybrid genomes from diploid parental genomes and supporting analysis of segregation distortion. It is designed for researchers studying hybridization, recombination, genome evolution, or marker bias.

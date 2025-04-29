@@ -4,26 +4,26 @@ Simulating F1 Hybrids and Detecting Segregation Distortion from Genomic Data
 
 ## What task/goal does this project accomplish and why is this useful?
 
-This project provides users with a command-line tool to simulate F1 hybrid genomes and detect genomic regions with segregation distortion. Segregation distortion can indicate the presence of (a) selection, (b) incompatibility, or (c) meiotic drive making this a useful tool for population geneticists, breeders, and anyone studying hybridization.
+Distortopia provides a modular command-line toolkit for simulating F1 hybrid genomes and detecting segregation distortion using real or simulated genomic data. Segregation distortion (where allele frequencies deviate from Mendelian expecatations) can indicate the presence of (a)selection, (b) hybrid incompatibility, or (c) meitoic drive. These possibilities make this toolkit valuable for evolutionary biologists, geneticists, and breeders. 
 
-The project is designed to be general-purpose: any organism with variant data in VCF format and reference sequences in FASTA format can be used. This makes the tool widely applicable for simulation-based studies or exploring real hybrid genotypes.
+Unlike existing tools, Distortopia integrates hybrid genome simulation, sequence alignment, and distortion analysis into a single, customizable pipeline. It supports general-purpose use on any organism with available genome assemblies in FASTA format. 
 
 ## What type of data/input should users provide to the program?
 
-The user will provide:
-- Two parent genotype files in VCF format (`parent1.vcf`, `parent2.vcf`)
-- Reference genomes or chromosome assemblies in FASTA format
-- *(Optional)* A real (or simulated) F1 VCF file from which to directly analyze segregation distortion
+Users can input:
+- Two parent genome assemblies in FASTA format
+- SNP position tables (generated or supplied by the user as a `.tsv`)
+- *(Optional)* Pre-existing hybrid genome assemblies or simulated VCFs
 
-Command-line arguments will allow users to toggle with the simulation and analysis steps.
+These files can be downloaded using built-in modules or prepared independently
 
 ## Where will the user data come from?
 
-Data files can be downloaded from public repositories (NCBI, Ensembl) or generated using variant calling pipelines such as GATK, bcftools, or samtools.  
+Distortopia includes scripts to download and prepare reference genome assemblies directly from NCBI. Data can also be sourced from the user's existing genomic datasets (e.g. VCF, experimental genomes).
 
 Example file formats:
 
-```**VCF**:
+```**VCF**
 ##fileformat=VCFv4.2
 ##source=Distortopia
 #CHROM  POS    ID      REF     ALT     QUAL   FILTER  INFO FORMAT parent1
@@ -31,7 +31,8 @@ chr1    10523   .       G       A       .      PASS    .    GT    0/1
 chr1    20831   .       T       C       .      PASS    .    GT    1/1
 chr1    31005   .       A       G       .      PASS    .    GT    0/0
 ```
-```**FASTA**:
+or as:
+```**FASTA**
 >chr1 length=30427671 assembly=GCF_000001405.39 source=Homo_sapiens
 AGCTGACCTAGGCTACCTTACGATCGATCGATCGATCGATGCTAGCTAGCTAGCTGATCGATCGATCGATCGA
 CGATCGATCGTACGTACGTAGCTAGCTAGCTAGCTAGCATCGATCGATCGATCGATCGTAGCTAGCTAGCTAG
@@ -40,84 +41,62 @@ CGATCGATCGTACGTACGTAGCTAGCTAGCTAGCTAGCATCGATCGATCGATCGATCGTAGCTAGCTAGCTAG
 TTGACGATCGATCGTACTGACTGATCGATCGATAGCTAGCTAGCTAGCTAACGTAGCTAGCTAGCTAGCTAGC
 GATCGATCGTAGCTAGCTGATCGATCGATGATCGTAGCTAGCTAGCATCGATCGATCGATCGATCGATCGTAG
 ```
-
 ## How will users interact with the program?
 
-Users will interact with the program via a command-line interface (CLI). To install and run the program locally, they can follow these steps:
+This package is CLI-driven. Modules can be executed individually or through a unified command structure via `__main__.py.` 
 
-1. **Clone the Repository**
-
-Navigate to the current working directory where you intent to clone the project, then run:
-```bash
-git clone https://github.com/YOUR-USERNAME/Distortopia.git
-cd Distortopia
+Example usage includes:
+#Generate an F1 Hybrid
+```**bash**
+python distortopia/simf1poly.py \
+  --ref-dir distortopia/user-data/Arabidopsis_thaliana/...fna \
+  --query-dir distortopia/user-data/Arabidopsis_lyrata/...fna \
+  --snp distortopia/genomes/snp_positions.tsv \
+  --out distortopia/genomes/f1_hybrid.fna
 ```
-
-2. **Install Dependencies**
-
-If using **conda**:
-```bash
-conda install python=3.10 biopython -c conda-forge
-```
-Alternatively, via **pip**:
-```bash
-pip install biopython
-```
-Additionaly dependencies (pandas, matplotlib) may be required depending on which modules are used.
-
-3. **Run the program:**
-
- Execute the program using the -m flag or directly call on specific scripts. 
-
- For example:
-```bash
-python -m distortopia --simulate-f1 --parent1 data/parent1.vcf --parent2 data/parent2.vcf --output data/f1_hybrid.vcf
-
-python -m distortopia --detect-distortion --f1 data/f1_hybrid.vcf --output results/segdist_table.csv
-```
-```bash
-optional arguments:
- -h, --help                 show this help message and exit
- --parent1 PARENT1          path to first parental file (FASTA/VCF)
- --parent2 PARENT2          path to second parental file (FASTA/VCF)
- --output OUTPUT            path to the simulated F1 chromosome VCF file
- --snp-count SNP_COUNT  number of SNPs to simulate per chromosome (default: 1000)
- --chrom-length CHROM_LENGTH  chromosome length in base pairs (default: 1Mb)
- --distortion                      apply segregation distortion 
+#Align F1 genome to reference
+```**bash**
+python distortopia/aligning_genomes.py \
+  --ref-dir distortopia/user-data/Arabidopsis_thaliana/...fna \
+  --query-dir distortopia/genomes/f1_hybrid.fna \
+  --out distortopia/genomes/hybrid_vs_ref.paf
 ```
 
 ## What type of output will the program produce? 
 
-The program will be able to generate:
+Distortopia generates:
 
-- Simulated VCF files of F1 hybrids
-- CSV tables showing observed vs. expected genotype frequencies
-- Diagnostic plots (histograms, barplots) for distorted regions
-- *(Optional)* Summary stats exported to JSON or HTML
+- Simulated hybrid genome FASTA files
+- `.paf` alignments between genomes (via minimap2)
+- SNP position TSV files for hybrid construction
+- Interactive HTML summaries of SNPs (`athal_vs_alyr_summary.html`)
+- Diagnostic dotplot-style PNG visualizations of genome alignments (via D-Genies)
 
-These outputs are suitable for visualization, downstream analysis, or direct reporting in scientific works.
+These outputs are suitable for validation, visualization, or identifying distorted genomic regions.
 
 ## What other tools currently exist to do this task, or something similar?
 
-Few tools exist for simulating recombination, hybrid genomes, or exploring genetic variation patterns. Notable examples include:
+While a few tools exist for simulating recombination, generating hybrid genomes, or analyzing variant data, none fully integrates simulation and segregation distortion into a lightweight, CLI-friendly package. Below is a comparative overview: 
 
 [recom-sim](https://github.com/salanova-elliott/recom-sim):
-This Python-based simulator creates recombinant genomes using parental input genotypes and genetic maps. It is specially designed for modeling recombination under different biological scenarios, including crossover interference. However, the program focuses on recombination mechanics and does not include modules for segregation distortion detection or downstream variant filtering and visualization. Additionally, it assumes the use of a recombination map, whereas Distortopia simulates hybrids and distortion from VCF inputs alone, making it more general-purpose.
+A Python-based simulator that generates recombinant genomes using parental genotypes and genetic maps. It excels in modeling crossover interference and recombination rate variation. However, it does not support distortion detection, marker parsing, or hybrid genome output without a genetic map. This limits its generality compared to Distortopia.
 
 [simuPOP](https://github.com/BoPeng/simuPOP):
-A forward-time simulator capable of modeling complex demographic and evolutionary scenarios. While the program is extremely flexible, its steep learning curve and scripting-heavy interface make it less accessible for quick hybrid simulations.
+A powerful forward-time simulator designed for modeling complex demographic and evolutionary dynamics. While it is extremely flexible, its steep learning curve and scripting-heavy interface make it less accessible for quick hybrid genome simulations and/or small-scale empirical testing.
 
 [vcftools](https://github.com/vcftools/vcftools) and [bcftools](https://github.com/samtools/bcftools):
-These are standard tools for filtering, summarizing, and manipulating VCF files. While they are useful for general variant processing, they do not offer simulation or distortion-specific workflows.
+These standard bioinformatics tools are essential for VCF filtering, annotation, and manipulation. However, they do not provide any genome simulation or segregation distortion functionality. They are best used as pre-processing or post-processing utilities in workflows like Distortopia's 
 
-Distortopia is unique in that it can:
+# What make Distortopia unique?
 
-- Use real or simulated VCF input from any diploid organism
-- Simulate hybrid genotypes
-- Detect markers with segregation distortion
-- Produce both summary tables and visualizations
+- Simulates haploid F1 hybrid genomes directly from base-level alignments and SNP data
+- Detects and exports SNP positions with potential segregation distortion
+- Uses minimap2 `.paf` alignments as a foundation for simulation, not variant calls or maps
+- Supports both real and simulated data inputs
+- Outputs are ready for visualization (HTML summaries, dotplots, alignments) or use in downstream analyses
+- Designed for ease of use
 
-The program is intended to be lightweight, customizable, and CLI-driven with minimal user setup. To the author's knowledge, no current tool offers *this* combination of features, making it an extremely useful utility for geneticists, educators, and bioinformatics researchers alike.
+Ultimately, Distortopia fills a current gap in population genomic tools: the ability to generate and analyze hybrid genomes **without needing**  phased VCFs, recombination maps, or full pedigree simulations. This makes it well-suited for researchers working with non-model organissm, educators teaching hybridization concepts, or developers testing alignment and distortion pipelines.
 
 ### Psuedocode 
 
