@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: distortopia
+Version: 0.1
+Summary: A tool for simulating F1 hybrids and detecting segregation distortion from VCF files.
+Author: Riya Rampalli
+Author-email: rr3491@columbia.edu
+License: GPLv3
+Classifier: Programming Language :: Python :: 3
