@@ -15,3 +15,7 @@ genomes/*.vcf
 # Ignore all .paf files except for known small examples
 *.paf
 !genomes/athal_vs_alyr.paf
+
+#add .egg-info/ and .DS_Store to .gitignore (build artifacts)
+*.egg-info/
+.DS_Store
