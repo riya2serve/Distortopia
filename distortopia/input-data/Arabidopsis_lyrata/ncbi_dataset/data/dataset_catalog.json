@@ -1,0 +1,81 @@
+{
+"apiVersion": "V2",
+"assemblies": [
+{
+  "files": [
+    {
+      "filePath": "assembly_data_report.jsonl",
+      "fileType": "DATA_REPORT",
+      "uncompressedLengthBytes": "18359"
+    }
+  ]
+},{
+  "accession": "GCA_000004255.1",
+  "files": [
+    {
+      "filePath": "GCA_000004255.1/GCA_000004255.1_v.1.0_genomic.fna",
+      "fileType": "GENOMIC_NUCLEOTIDE_FASTA",
+      "uncompressedLengthBytes": "209335018"
+    },
+    {
+      "filePath": "GCA_000004255.1/genomic.gff",
+      "fileType": "GFF3",
+      "uncompressedLengthBytes": "98679284"
+    }
+  ]
+},{
+  "accession": "GCA_000524985.1",
+  "files": [
+    {
+      "filePath": "GCA_000524985.1/GCA_000524985.1_Alyr_1.0_genomic.fna",
+      "fileType": "GENOMIC_NUCLEOTIDE_FASTA",
+      "uncompressedLengthBytes": "234649275"
+    }
+  ]
+},{
+  "accession": "GCA_026151145.1",
+  "files": [
+    {
+      "filePath": "GCA_026151145.1/GCA_026151145.1_ALyr_1.0_genomic.fna",
+      "fileType": "GENOMIC_NUCLEOTIDE_FASTA",
+      "uncompressedLengthBytes": "189852634"
+    }
+  ]
+},{
+  "accession": "GCA_900205625.1",
+  "files": [
+    {
+      "filePath": "GCA_900205625.1/GCA_900205625.1_Alyrpet2.2_genomic.fna",
+      "fileType": "GENOMIC_NUCLEOTIDE_FASTA",
+      "uncompressedLengthBytes": "177600000"
+    }
+  ]
+},{
+  "accession": "GCA_944990045.1",
+  "files": [
+    {
+      "filePath": "GCA_944990045.1/GCA_944990045.1_MN47_v2_genomic.fna",
+      "fileType": "GENOMIC_NUCLEOTIDE_FASTA",
+      "uncompressedLengthBytes": "246904158"
+    },
+    {
+      "filePath": "GCA_944990045.1/genomic.gff",
+      "fileType": "GFF3",
+      "uncompressedLengthBytes": "118629079"
+    }
+  ]
+},{
+  "accession": "GCF_000004255.2",
+  "files": [
+    {
+      "filePath": "GCF_000004255.2/GCF_000004255.2_v.1.0_genomic.fna",
+      "fileType": "GENOMIC_NUCLEOTIDE_FASTA",
+      "uncompressedLengthBytes": "209494751"
+    },
+    {
+      "filePath": "GCF_000004255.2/genomic.gff",
+      "fileType": "GFF3",
+      "uncompressedLengthBytes": "164265639"
+    }
+  ]
+}]}
