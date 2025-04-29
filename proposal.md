@@ -101,15 +101,21 @@ Ultimately, Distortopia fills a current gap in population genomic tools: the abi
 
 ### Psuedocode 
 
-Pseudocode has been written directly into the corresponding Python file modules within the distortopia/ directory. Each script includes docstrings and inline comments that outline the purpose of its functions or classes. This includes:
+Each component of Distortopia is modularized in its own Python script. Each script contains detailed docstrings, inline comments, and function-level documentation that serves as both pseduocode and developer guidance. These scropts form the backbone of the project:
 
-- __main__.py for command-line interface handling
+- `populatenome.py`:
+	Interactively selects FASTA genomes from two species, and aligns them 
+- `simparents.py`:
 
-- __simf1poly__.py for F1 hybrid simulation from VCFs
+- `simf1poly.py`:
 
-- __segdistorters__.py for detecting segregation distortion
+- `aligning_genomes.py`:
+	Aligns a hybrid genome back to a parental reference using `minimap2`, optionally in `.paf` or `.sam` format. Useful for validating F1 simulation and visualizing genome-wide similarity (e.g. via dot plots on [D-genesis](https://dgenies.toulouse.inra.fr).
+- `module.py`: (*optional utility*)
+	Houses helper functions
+- `__main__.py`:
+	Intended for future CLI integration. This will act as a wrapper allowing users to invoke the full pipeline with flags like `--simulate-f1` or `--detect-distortion`.
 
-- [...]
 
-These serve as the backbone of the project and will be iteratively converted into fully functional code. This approach will ensure modular development and allow others to immediately begin contributing to and/or testing specific components.
+
 
