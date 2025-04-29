@@ -46,6 +46,7 @@ GATCGATCGTAGCTAGCTGATCGATCGATGATCGTAGCTAGCTAGCATCGATCGATCGATCGATCGATCGTAG
 This package is CLI-driven. Modules can be executed individually or through a unified command structure via `__main__.py.` 
 
 Example usage includes:
+
 #Generate an F1 Hybrid
 ```**bash**
 python distortopia/simf1poly.py \
