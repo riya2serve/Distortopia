@@ -37,3 +37,6 @@ genomes/*.vcf
 #ignore all .paf files except for known small examples
 *.paf
 !genomes/athal_vs_alyr.paf
+
+#ignore generated HTML summaries
+genomes/*.html
