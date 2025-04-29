@@ -16,6 +16,5 @@ genomes/*.vcf
 *.paf
 !genomes/athal_vs_alyr.paf
 
-#add .egg-info/ and .DS_Store to .gitignore (build artifacts)
-*.egg-info/
+#add .DS_Store to .gitignore (build artifacts)
 .DS_Store
