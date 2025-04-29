@@ -1,2 +1,0 @@
-[console_scripts]
-distortopia = distortopia.__main__:main
