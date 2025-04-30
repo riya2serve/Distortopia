@@ -10,6 +10,7 @@ color_map = {'ref': '#4C72B0', 'alt': '#DD8452'}
 
 #Group by F1 replicate
 for rep, group in df.groupby("rep"):
+	group = group.drop_duplicates(subset=["rep", "ref_chrom"])
     fig, ax = plt.subplots(figsize=(10, 5))
     y_labels = []
 
