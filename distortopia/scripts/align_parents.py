@@ -141,3 +141,17 @@ if __name__ == "__main__":
     summary_of_paf(paf_path, html_out, snp_out)
 
     os.system(f"open {html_out}")
+
+#=====
+#EXAMPLE CLI
+#=====
+
+#(base) riyarampalli@Riyas-MacBook-Pro-7 distortopia % python scripts/align_parents.py \
+  #--ref-dir input-data/Arabidopsis_thaliana/ncbi_dataset/data/GCA_000001735.2/GCA_000001735.2_TAIR10.1_genomic.fna \
+  #--alt-dir input-data/Arabidopsis_lyrata/ncbi_dataset/data/GCA_000004255.1/GCA_000004255.1_v.1.0_genomic.fna \
+  #--outdir genomes/par_alignments \
+  #--threads 8
+
+
+
+
