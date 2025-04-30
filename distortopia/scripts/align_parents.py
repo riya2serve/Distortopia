@@ -114,8 +114,8 @@ def summary_of_paf(paf_path, html_out="alignment_summary.html", snp_out="snp_pos
             {'selector': 'caption', 'props': [('caption-side', 'top'), ('font-size', '16px'), ('font-weight', 'bold')]}
         ])
     styled.to_html(html_out)
-    print(f"✅ HTML summary written to: {html_out}")
-    print(f"✅ SNP table written to: {snp_out}")
+    print(f"HTML summary written to: {html_out}")
+    print(f"SNP table written to: {snp_out}")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Align two genomes and extract SNP summary")
