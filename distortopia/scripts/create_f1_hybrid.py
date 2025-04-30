@@ -4,6 +4,7 @@ from Bio.SeqRecord import SeqRecord
 import pandas as pd #for working with dataframes and generated HTML style summaries
 import os #interacts with operating system 
 import argparse #allows for command-line arguments/flags from/for users
+import numpy as np #for assigning random binomial
 
 """
 This script loads A. thaliana and A. lyrata .fna files and then parses the SNP alignment summary.
@@ -15,83 +16,92 @@ def load_fasta(fasta_path):
     #loads query ('reference') and target FASTA sequences into dictionaries
     return {record.id: list(str(record.seq)) for record in SeqIO.parse(fasta_path, "fasta")}
 
-def parse_snps(csv_path):
-    df = pd.read_csv(csv_path, sep="\t")
-    snp_data = []
+def simulate_CO (ref_seq, alt_seq):
+    """
+    Simualte a single crossover event between ref_seq and alt_seq.
+    Return the recombinant sequence and a tuple (left_parent, right_parent, crossover_position).
+    """
+    seq_len = len(ref_seq) #getting length of the reference seq
+    crossover = np.random.binomial(1, 0.5) #50% chance of a crossover event
+    if crossover:
+        crossover_pos = np.random.randint(0, seq_len) #position will occur somewhere btween start-end of contig
+        if np.random.binomial(1, 0.5):
+            left = ref_seq[:crossover_pos] #left of crossover will be ref_seq
+            right = alt_seq[crossover_pos:] #right of crossover will be alt_seq
+            left_parent, right_parent = "ref", "alt"
+        else: #otherwise the below is actually the order
+            left = alt_seq[:crossover_pos]
+            right = ref_seq[crossover_pos:]
+            left_parent, right_parent = "alt", "ref"
+        return left + right, (left_parent, right_parent, crossover_pos)
+    else:
+        if np.random.binomial(1,0.5):
+            return ref_seq, ("ref", "ref", None) #no crossover, ref_seq inherited
+        else:
+            return alt_seq, ("alt", "alt", None) #no crossover, alt_seq inherited
 
-    for _, row in df.iterrows():
-        query_id = row["Query"].split()[0]  # e.g., BASP01000003.1
-        target_id = row["Target"].split()[0]  # e.g., CP087130.2
-        positions = row["SNP_Positions"]
-        if pd.notna(positions):
-            snps = [int(pos.strip()) for pos in str(positions).split(",")]
-            snp_data.append((query_id, target_id, snps))
-    
-    return snp_data
+def simulate_f1_genome(ref_genome, alt_genome, rep, output_dir):
+    """
+    Generate a single F1 genome sequence.
+    Return both its FASTA file (.fna) and a csv of inherited blocks.
+    """
 
-def simulate_hybrid(ref_genome, tgt_genome, snp_data):
-    #generating hybrid by replacing ref. base with target base
-    hybrid = ref_genome.copy()
+    hybrid_record = [] #initializing empty list
+    f1_table = [] #initializing a list of dicts describing inheritance per contig.
 
-    for query_id, target_id, snps in snp_data:
-        if query_id not in ref_genome or target_id not in tgt_genome:
-            continue  # Skip contigs not found
+    for chrom in ref_genome:
+        if chrom not in alt_genome:
+            continue #skipping contigs that don't match (might have to fix this!)
+        ref_seq = ref_genome[chrom]
+        alt_seq = alt_genome[chrom]
 
-        ref_seq = ref_genome[query_id]
-        tgt_seq = tgt_genome[target_id]
+        hybrid_seq, (left, right, pos) = simulate_CO(ref_seq,alt_seq)
+        hybrid_record.append(SeqRecord(Seq(hybrid_seq), id = f"{chrom}_rep{rep}", 
+            description = "F1_recombinant"))
+        f1_table.append({
+            "rep": rep,
+            "chrom": chrom,
+            "left": left,
+            "right": right,
+            "crossover_pos": pos if pos is not None else "None" #writing positions
+        })
 
-        for pos in snps:
-            idx = pos - 1  # Convert to 0-based
-            try:
-                hybrid[query_id][idx] = tgt_seq[idx]  # Replace with target base
-            except IndexError:
-                continue  # Handle edge case if index exceeds contig length
+#Write out hybrid FASTA
+    fasta_out = os.path.join(output_dir, f"f1_genome_rep{rep}.fna")
+    SeqIO.write(hybrid_record, fasta_out, "fasta")
 
-    return hybrid
+    return f1_table #printing table
 
-def write_fasta(output_dict, output_path):
-    #writes hybrid sequence to a FASTA file
-    records = []
-    for contig_id, seq in output_dict.items():
-        record = SeqRecord(Seq("".join(seq)), id=contig_id, description="hybrid")
-        records.append(record)
-    SeqIO.write(records, output_path, "fasta")
+def main(ref_dir, alt_dir, output_dir, n_replicates):
+    os.makedirs(output_dir, exist_ok = True)
+
+    print("Loading reference and alternate genomes . . .")
+    ref_genome = load_fasta(ref_dir)
+    alt_genome = load_fasta(alt_dir)
+
+    all_f1_tables = [] #initializing list for replicate F1 genomes 
+    for rep in range(1,n_replicates +1):
+        print(f"Simulating F1 replicate {rep}...")
+        f1_table = simulate_f1_genome(ref_genome, alt_genome, rep, output_dir)
+        all_f1_tables.extend(f1_table)
+
+    #Save full table
+    df = pd.DataFrame(all_f1_tables)
+    df.to_csv(os.path.join(output_dir, "f1_table.csv"), index = False)
+    print("All F1 simulations complete. Outputs written to:", output_dir)
 
 def parse_args():
-    """
-    Command-line argument interface.
-    """
-    parser = argparse.ArgumentParser(description="Simulate pseudo-F1 hybrid FASTA from two parent genomes.")
-    parser.add_argument("--ref-dir", required=True, help="Path to A. thaliana reference .fna file")
-    parser.add_argument("--query-dir", required=True, help="Path to A. lyrata target .fna file")
-    parser.add_argument("--snp", required=True, help="Path to SNP summary table (TSV)")
-    parser.add_argument("--out", default="pseudo_F1_hybrid.fasta", help="Output FASTA filename")
+    parser = argparse.ArgumentParser(description="Simulate recombined F1 hybrid FASTA(s) from two parents.")
+    parser.add_argument("--ref-dir", required=True, help="Path to parent 1 genome (.fna)")
+    parser.add_argument("--alt-dir", required=True, help="Path to parent 2 genome (.fna)")
+    parser.add_argument("--outdir", default="genomes", help="Output directory for simulated genomes")
+    parser.add_argument("--reps", type=int, default=1, help="Number of F1 replicates to generate")
     return parser.parse_args()
 
 if __name__ == "__main__":
-    args = parse_args()  # <--- call and assign it here
-
-    print("Loading genomes...")
-    ref_genome = load_fasta(args.ref_dir)
-    tgt_genome = load_fasta(args.query_dir)
-
-    print("Parsing SNP table...")
-    snp_data = parse_snps(args.snp)
-
-    print("Simulating F1 hybrid...")
-    hybrid_genome = simulate_hybrid(ref_genome, tgt_genome, snp_data)
-
-    print(f"Writing output to {args.out}")
-    write_fasta(hybrid_genome, args.out)
+    args = parse_args()
+    main(args.ref_dir, args.alt_dir, args.outdir, args.reps)
 
 
-## ==========
-# EXAMPLE CLI 
-## ==========
 
-#bash
-##python simf1poly.py \
-  ###--ref-dir user-data/Arabidopsis_thaliana/ncbi_dataset/data/GCA_000001735.2/GCA_000001735.2_TAIR10.1_genomic.fna \
-  ###--query-dir user-data/Arabidopsis_lyrata/ncbi_dataset/data/GCA_000004255.1/GCA_000004255.1_v.1.0_genomic.fna \
-  ###--snp snp_positions.tsv \
-  ###--out F1_hybrid.fna
+
