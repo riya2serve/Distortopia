@@ -14,7 +14,7 @@ genome.
 """
 def load_fasta(fasta_path):
     #loads query ('reference') and target FASTA sequences into dictionaries
-    return {record.id: list(str(record.seq)) for record in SeqIO.parse(fasta_path, "fasta")}
+    return {record.id: str(record.seq) for record in SeqIO.parse(fasta_path, "fasta")}
 
 def simulate_CO (ref_seq, alt_seq):
     """
@@ -46,21 +46,25 @@ def simulate_f1_genome(ref_genome, alt_genome, rep, output_dir):
     Return both its FASTA file (.fna) and a csv of inherited blocks.
     """
 
-    hybrid_record = [] #initializing empty list
-    f1_table = [] #initializing a list of dicts describing inheritance per contig.
+    hybrid_record = [] #initializing empty list of SeqRecord objects to write to FASTA file 
+    f1_table = [] #initializing a list of dicts describing inheritance 
 
-    for chrom in ref_genome:
-        if chrom not in alt_genome:
-            continue #skipping contigs that don't match (might have to fix this!)
-        ref_seq = ref_genome[chrom]
-        alt_seq = alt_genome[chrom]
+    #Iterate over contigs by index num
+    for (ref_chrom, ref_seq), (alt_chrom, alt_seq) in zip(ref_genome.items(), alt_genome.items()):
+        hybrid_seq, (left, right, pos) = simulate_CO(ref_seq, alt_seq)
 
-        hybrid_seq, (left, right, pos) = simulate_CO(ref_seq,alt_seq)
-        hybrid_record.append(SeqRecord(Seq(hybrid_seq), id = f"{chrom}_rep{rep}", 
-            description = "F1_recombinant"))
+        # Save recombinant sequence
+        hybrid_record.append(
+            SeqRecord(
+                Seq(hybrid_seq), #joining generated FASTA sequences
+                id=f"{ref_chrom}_rep{rep}",  # use reference contig name in ID
+                description="F1_recombinant"
+            )
+        )
         f1_table.append({
             "rep": rep,
-            "chrom": chrom,
+            "ref_chrom": ref_chrom,
+            "alt_chrom": alt_chrom,
             "left": left,
             "right": right,
             "crossover_pos": pos if pos is not None else "None" #writing positions
@@ -101,7 +105,5 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     main(args.ref_dir, args.alt_dir, args.outdir, args.reps)
-
-
 
 
