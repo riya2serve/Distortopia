@@ -105,7 +105,8 @@ def summary_of_paf(paf_path, html_out="alignment_summary.html", snp_out="snp_pos
     df = pd.DataFrame(results)
     df[["Query", "Target", "SNP_Positions"]].to_csv(snp_out, sep="\t", index=False)
 
-    styled = df.style\ #styling dataframe
+    #styling dataframe
+    styled = df.style\ 
         .background_gradient(subset=["SNPs", "Indels"], cmap="Reds")\
         .highlight_max(color="lightgreen", axis=0, subset=["Matches"])\
         .set_caption("Minimap2 Alignment Summary")\
