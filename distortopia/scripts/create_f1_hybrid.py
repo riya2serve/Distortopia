@@ -72,7 +72,8 @@ def simulate_f1_genome(ref_genome, alt_genome, rep, output_dir):
 
 #Write out hybrid FASTA
     fasta_out = os.path.join(output_dir, f"f1_genome_rep{rep}.fna")
-    SeqIO.write(hybrid_record, fasta_out, "fasta")
+    with open(fasta_out, "w") as handle:
+        SeqIO.write(hybrid_record, handle, "fasta-2line")
 
     return f1_table #printing table
 
