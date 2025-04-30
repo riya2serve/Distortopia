@@ -106,17 +106,15 @@ def summary_of_paf(paf_path, html_out="alignment_summary.html", snp_out="snp_pos
     df[["Query", "Target", "SNP_Positions"]].to_csv(snp_out, sep="\t", index=False)
 
     #styling dataframe
-    styled = df.style\ 
-        .background_gradient(subset=["SNPs", "Indels"], cmap="Reds")\
-        .highlight_max(color="lightgreen", axis=0, subset=["Matches"])\
-        .set_caption("Minimap2 Alignment Summary")\
+    styled = df.style \
+        .background_gradient(subset=["SNPs", "Indels"], cmap="Reds") \
+        .highlight_max(color="lightgreen", axis=0, subset=["Matches"]) \
+        .set_caption("Minimap2 Alignment Summary") \
         .set_table_styles([
             {'selector': 'th', 'props': [('background-color', '#f2f2f2'), ('color', '#333'), ('font-size', '12px')]},
             {'selector': 'caption', 'props': [('caption-side', 'top'), ('font-size', '16px'), ('font-weight', 'bold')]}
-        ])
-    styled.to_html(html_out)
-    print(f"HTML summary written to: {html_out}")
-    print(f"SNP table written to: {snp_out}")
+    ])
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Align two genomes and extract SNP summary")
