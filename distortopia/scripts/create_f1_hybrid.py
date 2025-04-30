@@ -25,7 +25,7 @@ def simulate_CO (ref_seq, alt_seq):
     crossover = np.random.binomial(1, 0.5) #50% chance of a crossover event
     if crossover:
         crossover_pos = np.random.randint(0, seq_len) #position will occur somewhere btween start-end of contig
-        if np.random.binomial(1, 0.5):
+        if np.random.binomial(1, 0.5): #chance of crossover occuring
             left = ref_seq[:crossover_pos] #left of crossover will be ref_seq
             right = alt_seq[crossover_pos:] #right of crossover will be alt_seq
             left_parent, right_parent = "ref", "alt"
