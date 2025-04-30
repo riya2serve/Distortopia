@@ -82,7 +82,7 @@ def main(ref_dir, alt_dir, snp_tsv, output_dir, n_replicates):
     print("Loading reference and alternate genomes...")
     ref_genome = load_fasta(ref_dir)
     alt_genome = load_fasta(alt_dir)
-    contig_pairs = load_aligned_contig_pairs(snp_tsv)
+    contig_pairs = load_aligned_contigs(snp_tsv)
 
     all_f1_tables = []
     for rep in range(1, n_replicates + 1):
