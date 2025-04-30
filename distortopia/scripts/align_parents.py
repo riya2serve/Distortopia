@@ -107,14 +107,20 @@ def summary_of_paf(paf_path, html_out="alignment_summary.html", snp_out="snp_pos
 
     #styling dataframe
     styled = df.style \
-        .background_gradient(subset=["SNPs", "Indels"], cmap="Reds") \
-        .highlight_max(color="lightgreen", axis=0, subset=["Matches"]) \
-        .set_caption("Minimap2 Alignment Summary") \
-        .set_table_styles([
-            {'selector': 'th', 'props': [('background-color', '#f2f2f2'), ('color', '#333'), ('font-size', '12px')]},
-            {'selector': 'caption', 'props': [('caption-side', 'top'), ('font-size', '16px'), ('font-weight', 'bold')]}
+    .background_gradient(subset=["SNPs", "Indels"], cmap="Reds") \
+    .highlight_max(color="lightgreen", axis=0, subset=["Matches"]) \
+    .set_caption("Minimap2 Alignment Summary") \
+    .set_table_styles([
+        {'selector': 'th', 'props': [('background-color', '#f2f2f2'), ('color', '#333'), ('font-size', '12px')]},
+        {'selector': 'caption', 'props': [('caption-side', 'top'), ('font-size', '16px'), ('font-weight', 'bold')]}
     ])
 
+#Write the HTML file to disk
+with open(html_out, "w") as f:
+    f.write(styled.to_html())
+
+print(f"HTML summary written to: {html_out}")
+print(f"SNP table written to: {snp_out}")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Align two genomes and extract SNP summary")
@@ -146,8 +152,8 @@ if __name__ == "__main__":
 #=====
 
 #(base) riyarampalli@Riyas-MacBook-Pro-7 distortopia % python scripts/align_parents.py \
-  #--ref-dir input-data/Arabidopsis_thaliana/ncbi_dataset/data/GCA_000001735.2/GCA_000001735.2_TAIR10.1_genomic.fna \
-  #--alt-dir input-data/Arabidopsis_lyrata/ncbi_dataset/data/GCA_000004255.1/GCA_000004255.1_v.1.0_genomic.fna \
+  #--ref-dir input-data/Arabidopsis_thaliana \
+  #--alt-dir input-data/Arabidopsis_lyrata \
   #--outdir genomes/par_alignments \
   #--threads 8
 
