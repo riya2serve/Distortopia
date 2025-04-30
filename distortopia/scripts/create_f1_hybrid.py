@@ -1,17 +1,16 @@
-from Bio import SeqIO #BioPython module for reading and writing sequence files 
+from Bio import SeqIO
 from Bio.Seq import Seq 
 from Bio.SeqRecord import SeqRecord
-import pandas as pd #for working with dataframes and generated HTML style summaries
-import os #interacts with operating system 
-import argparse #allows for command-line arguments/flags from/for users
-import numpy as np #for assigning random binomial
+import pandas as pd
+import os
+import argparse
+import numpy as np
 
 """
-This script loads A. thaliana and A. lyrata .fna files and then parses the SNP alignment summary.
-It allows users to extract both reference and target bases at SNP positions. 
-With this, users can simulate a haploid F1 hybrid, with target SNPs incorporated into the reference
-genome. 
+This script simulates haploid F1 hybrid genomes based on minimap2 alignments between parental genomes.
+It uses contig pairs from a .tsv file and simulates crossover events to generate hybrid FASTA files.
 """
+
 def load_fasta(fasta_path):
     # Load sequences into dictionary: {contig_id: sequence string}
     return {record.id: str(record.seq) for record in SeqIO.parse(fasta_path, "fasta")}
@@ -19,12 +18,14 @@ def load_fasta(fasta_path):
 def load_aligned_contigs(snp_tsv):
     """
     Reads aligned contig pairs from the summary TSV file.
-    Returns a list of (ref_contig, alt_contig) tuples.
+    Cleans whitespace and annotations.
     """
     df = pd.read_csv(snp_tsv, sep="\t")
+    df["Query"] = df["Query"].str.strip().str.split().str[0]
+    df["Target"] = df["Target"].str.strip().str.split().str[0]
     return list(zip(df["Query"], df["Target"]))
 
-def simulate_CO(ref_seq, alt_seq): #for crossovers
+def simulate_CO(ref_seq, alt_seq):
     seq_len = len(ref_seq)
     crossover = np.random.binomial(1, 0.5)
     if crossover:
@@ -48,7 +49,9 @@ def simulate_f1_genome(ref_genome, alt_genome, contig_pairs, rep, output_dir):
 
     for ref_chrom, alt_chrom in contig_pairs:
         if ref_chrom not in ref_genome or alt_chrom not in alt_genome:
+            print(f"Skipping: {ref_chrom} or {alt_chrom} not found in FASTA files")
             continue
+
         ref_seq = ref_genome[ref_chrom]
         alt_seq = alt_genome[alt_chrom]
 
@@ -106,6 +109,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     main(args.ref_dir, args.alt_dir, args.snp_tsv, args.outdir, args.reps)
+
 #====
 # EXAMPLE CLI
 #====
