@@ -56,7 +56,7 @@ def simulate_f1_genome(ref_genome, alt_genome, rep, output_dir):
         # Save recombinant sequence
         hybrid_record.append(
             SeqRecord(
-                Seq(hybrid_seq), #joining generated FASTA sequences
+                Seq(hybrid_seq.upper()), #joining generated FASTA sequences
                 id=f"{ref_chrom}_rep{rep}",  # use reference contig name in ID
                 description="F1_recombinant"
             )
