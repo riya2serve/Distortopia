@@ -107,4 +107,16 @@ if __name__ == "__main__":
     args = parse_args()
     main(args.ref_dir, args.alt_dir, args.outdir, args.reps)
 
+#====
+# EXAMPLE CLI
+#====
+
+#(base) riyarampalli@Riyas-MacBook-Pro-7 distortopia % python scripts/create_f1_hybrid.py \
+  #--ref-dir input-data/Arabidopsis_thaliana/ncbi_dataset/data/GCA_000001735.2/GCA_000001735.2_TAIR10.1_genomic.fna \
+  #--alt-dir input-data/Arabidopsis_lyrata/ncbi_dataset/data/GCA_000004255.1/GCA_000004255.1_v.1.0_genomic.fna \
+  #--outdir genomes/f1_simulations \
+  #--reps 3
+
+
+
 
