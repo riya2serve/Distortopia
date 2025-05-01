@@ -122,4 +122,14 @@ if __name__ == "__main__":
   ##--outdir genomes/f1_simulations \
   ##--reps 3
 
+'''
+Use to reduce scope for debugging. Allows user to avoid the error 
+zsh: killed, which means process was forcefully terminated by the operating system 
+— most often because it exceeded available memory (RAM). 
+'''
+#(base) riyarampalli@MacBookPro distortopia % head -n 10 genomes/par_alignments/snp_positions.tsv > genomes/par_alignments/snp_subset.tsv
+
+
+
+
 
