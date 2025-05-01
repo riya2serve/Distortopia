@@ -61,3 +61,19 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     main(args.ref_fasta, args.alt_fasta, args.snp_tsv, args.outdir, args.reps, args.threads)
+
+
+#========
+# EXAMPLE CLI
+# =======
+'''
+Map long reads to BOTH reference genomes using minimap2. 
+Minimap2 maps to ref1 first and then ref2.
+'''
+#(base) riyarampalli@MacBookPro distortopia % python scripts/map_long_reads.py \
+  #--ref-fasta input-data/Arabidopsis_thaliana/ncbi_dataset/data/GCA_020911765.2/GCA_020911765.2_ASM2091176v2_genomic.fna \
+  #--alt-fasta input-data/Arabidopsis_lyrata/ncbi_dataset/data/GCA_000524985.1/GCA_000524985.1_Alyr_1.0_genomic.fna \
+  #--snp-tsv genomes/par_alignments/snp_positions.tsv \
+  #--outdir genomes/f1_simulations \
+  #--reps 1 \
+  #--threads 8
