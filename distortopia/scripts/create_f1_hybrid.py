@@ -14,20 +14,23 @@ def load_fasta(fasta_path):
 
 def load_aligned_contigs(snp_tsv):
     """
-    Parses the snp_positions.tsv to extract pairs of (ref, alt) contigs.
+    Parses a SNP position TSV and returns list of unique (ref,alt) contig pairs.
+    Target = reference contig, Query = alternate contig
     """
     df = pd.read_csv(snp_tsv, sep="\t")
-    return list(set(zip(df["Target"], df["Query"])))  # Target = ref, Query = alt (check field order!)
+    return list(set(zip(df["Target"], df["Query"])))  #remove duplicates
 
 def simulate_CO(ref_seq, alt_seq):
     """
-    Simulates a single crossover between two parental sequences.
+    Simulates a single meiotic crossover between two parental sequences.
+    Returns recombinant sequence and crossover metadata
     """
     seq_len = len(ref_seq)
-    crossover = np.random.binomial(1, 0.5)
+    crossover = np.random.binomial(1, 0.5) #defining 50% chance of CO occuring
     if crossover:
-        crossover_pos = np.random.randint(0, seq_len)
+        crossover_pos = np.random.randint(0, seq_len) #choose CO position randomly
         if np.random.binomial(1, 0.5):
+            #randomly decide which parent contributes to left/right "arm"
             left, right = ref_seq[:crossover_pos], alt_seq[crossover_pos:]
             left_parent, right_parent = "ref", "alt"
         else:
@@ -35,6 +38,7 @@ def simulate_CO(ref_seq, alt_seq):
             left_parent, right_parent = "alt", "ref"
         return left + right, (left_parent, right_parent, crossover_pos)
     else:
+        #if no CO: randomly fill entire sequence from one parent
         if np.random.binomial(1, 0.5):
             return ref_seq, ("ref", "ref", None)
         else:
@@ -42,10 +46,11 @@ def simulate_CO(ref_seq, alt_seq):
 
 def simulate_f1_genome(ref_genome, alt_genome, contig_pairs, rep, output_dir):
     """
-    Simulates a single F1 hybrid genome from matching contig pairs.
+    Simulates a single F1 hybrid genome by recombining contig pairs.
+    Returns list of recombination event metadata
     """
-    hybrid_record = []
-    f1_table = []
+    hybrid_record = [] #store hybrid sequences
+    f1_table = [] #store metadata for recombination events 
 
     for ref_contig, alt_contig in contig_pairs:
         if ref_contig not in ref_genome or alt_contig not in alt_genome:
@@ -54,8 +59,9 @@ def simulate_f1_genome(ref_genome, alt_genome, contig_pairs, rep, output_dir):
 
         ref_seq = ref_genome[ref_contig]
         alt_seq = alt_genome[alt_contig]
+        #simulate CO and get hybrid sequence
         hybrid_seq, (left, right, pos) = simulate_CO(ref_seq, alt_seq)
-
+        #store the recombined hybrid sequence
         hybrid_record.append(
             SeqRecord(
                 Seq(hybrid_seq),
@@ -63,6 +69,7 @@ def simulate_f1_genome(ref_genome, alt_genome, contig_pairs, rep, output_dir):
                 description="F1_recombinant"
             )
         )
+        #store metadata for recombined sequence
         f1_table.append({
             "rep": rep,
             "ref_chrom": ref_contig,
