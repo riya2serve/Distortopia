@@ -100,7 +100,6 @@ if __name__ == "__main__":
     main(args.ref_fasta, args.alt_fasta, args.snp_tsv, args.outdir, args.reps)
 
 
-
 #=======
 # EXAMPLE CLI
 #=======
@@ -113,3 +112,4 @@ Since .fasta file generated are huge, use the following function to check it wor
 Want to know total number of long reads simulated? Try this:
 '''
 #(base) riyarampalli@MacBookPro distortopia % grep ">" genomes/f1_simulations/f1_reads_rep1.fasta | wc -l
+
