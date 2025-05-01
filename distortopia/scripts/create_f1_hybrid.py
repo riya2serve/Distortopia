@@ -135,6 +135,6 @@ zsh: killed, which means process was forcefully terminated by the operating syst
   #--snp-tsv genomes/par_alignments/snp_subset.tsv \
   #--reps 1
 
-
+#(base) riyarampalli@MacBookPro distortopia % python scripts/visualize_f1_csv.py
 
 
