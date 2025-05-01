@@ -12,8 +12,11 @@ It uses contig pairs from a .tsv file and simulates crossover events to generate
 """
 
 def load_fasta(fasta_path):
-    # Load sequences into dictionary: {contig_id: sequence string}
-    return {record.id: str(record.seq) for record in SeqIO.parse(fasta_path, "fasta")}
+    # Normalize keys by stripping and splitting
+    return {  #Load sequences into dictionary: {contig_id: sequence string}
+        record.id.strip().split()[0]: str(record.seq)
+        for record in SeqIO.parse(fasta_path, "fasta")
+    }
 
 def load_aligned_contigs(snp_tsv):
     """
