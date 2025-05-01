@@ -10,7 +10,7 @@ def choose_fasta(species_name, species_dir):
     """
     Lists all FASTA files in the species NCBI directory and prompts user to select.
     """
-    fasta_paths = glob.glob(os.path.join(species_dir, "*.fna*"))
+    fasta_paths = glob.glob(os.path.join(species_dir, "**", "*.fna*"), recursive=True)
     if not fasta_paths: #raising error!!
         raise FileNotFoundError(f"No FASTA files found for {species_name} in {species_dir}")
     print(f"\n[SELECT FASTA FOR {species_name}]")
