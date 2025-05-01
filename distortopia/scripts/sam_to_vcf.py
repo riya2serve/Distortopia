@@ -1,6 +1,5 @@
 import pandas as pd
 import argparse
-import os
 
 # Extract mismatches from MD:Z and read seq
 def parse_sam_to_vcf(sam_path, ref_label):
@@ -42,22 +41,24 @@ def parse_sam_to_vcf(sam_path, ref_label):
                         i += 1
     return records
 
-def main(outdir, rep):
-    sam_ref = os.path.join(outdir, f"rep{rep}_vs_ref.sam")
-    sam_alt = os.path.join(outdir, f"rep{rep}_vs_alt.sam")
-    vcf_path = os.path.join(outdir, f"rep{rep}_long_read_alignment.vcf.tsv")
-
-    print(f"Parsing SAM files for rep {rep} to generate: {vcf_path}")
+def main(sam_ref, sam_alt, output_path, rep):
+    print(f"Parsing SAM files for rep {rep} to generate: {output_path}")
     combined = parse_sam_to_vcf(sam_ref, "ref") + parse_sam_to_vcf(sam_alt, "alt")
-    pd.DataFrame(combined).to_csv(vcf_path, sep="\t", index=False)
+    pd.DataFrame(combined).to_csv(output_path, sep="\t", index=False)
     print("Done.")
 
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--outdir", default="genomes/f1_simulations")
-    parser.add_argument("--rep", type=int, required=True)
+    parser = argparse.ArgumentParser(description="Generate VCF-like TSV from SAM alignments.")
+    parser.add_argument("--sam-ref", required=True, help="SAM file of long reads mapped to reference genome")
+    parser.add_argument("--sam-alt", required=True, help="SAM file of long reads mapped to alternative genome")
+    parser.add_argument("--output", required=True, help="Output path for VCF-like TSV file")
+    parser.add_argument("--rep", type=int, required=True, help="Replicate number")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.outdir, args.rep)
+    main(args.sam_ref, args.sam_alt, args.output, args.rep)
+
+
+
+    
