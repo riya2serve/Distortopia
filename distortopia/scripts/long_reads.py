@@ -158,3 +158,9 @@ Want to know total number of long reads simulated? Try this:
 ##POS             Read alignment start on reference genome            SAM field 4
 ##crossover_pos   Breakpoint between parental segments in F1 genome   f1_table.csv
 
+#(base) riyarampalli@MacBookPro distortopia % python scripts/long_reads.py \
+  #--ref-fasta input-data/Arabidopsis_thaliana/ncbi_dataset/data/GCA_020911765.2/GCA_020911765.2_ASM2091176v2_genomic.fna \
+  #--alt-fasta input-data/Arabidopsis_lyrata/ncbi_dataset/data/GCA_000524985.1/GCA_000524985.1_Alyr_1.0_genomic.fna \
+  #--snp-tsv genomes/par_alignments/snp_positions.tsv \
+  #--outdir genomes/f1_simulations \
+  #--reps 1
