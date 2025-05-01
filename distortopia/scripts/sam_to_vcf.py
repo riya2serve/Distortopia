@@ -60,5 +60,12 @@ if __name__ == "__main__":
     main(args.sam_ref, args.sam_alt, args.output, args.rep)
 
 
+#========
+# EXAMPLE CLI
+#========
 
-    
+#python scripts/sam_to_vcf.py \
+  #--sam-ref distortopia/genomes/f1_simulations/rep1_vs_ref.sam \
+  #--sam-alt distortopia/genomes/f1_simulations/rep1_vs_alt.sam \
+  #--output distortopia/genomes/f1_simulations/rep1_long_read_alignment.vcf.tsv \
+  #--rep 1
