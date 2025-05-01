@@ -10,21 +10,6 @@ import pandas as pd
 def load_f1_fasta(fasta_path):
     return {record.id: str(record.seq) for record in SeqIO.parse(fasta_path, "fasta")}
 
-# Introduce single-nucleotide errors to simulate HiFi reads (~0.1% error rate)
-def introduce_errors(sequence, error_rate=0.001):
-    """
-    Introduce random base substitution errors into the sequence.
-    Default error rate = 0.001 (0.1%)
-    """
-    bases = ['A', 'T', 'C', 'G']
-    seq_list = list(sequence)
-    for i in range(len(seq_list)):
-        if np.random.rand() < error_rate:
-            original = seq_list[i].upper()
-            if original in bases:
-                seq_list[i] = np.random.choice([b for b in bases if b != original])
-    return ''.join(seq_list)
-
 # Simulate long reads and align to parents
 def simulate_and_align(f1_genome, f1_table, rep, output_dir, read_len=15000, coverage=60):
     records = []
@@ -42,9 +27,8 @@ def simulate_and_align(f1_genome, f1_table, rep, output_dir, read_len=15000, cov
         for i in range(num_reads):
             start = np.random.randint(0, seq_len - read_len + 1)
             fragment = seq[start:start + read_len]
-            error_fragment = introduce_errors(fragment)  # <- Apply error model here
             read_id = f"rep{rep}_{contig_id}_read{i}"
-            records.append(SeqRecord(Seq(error_fragment), id=read_id, description="simulated_long_read"))
+            records.append(SeqRecord(Seq(fragment), id=read_id, description="simulated_long_read"))
 
     # Save simulated reads
     read_path = os.path.join(output_dir, f"f1_reads_rep{rep}.fasta")
