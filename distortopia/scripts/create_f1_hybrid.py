@@ -129,6 +129,11 @@ zsh: killed, which means process was forcefully terminated by the operating syst
 '''
 #(base) riyarampalli@MacBookPro distortopia % head -n 10 genomes/par_alignments/snp_positions.tsv > genomes/par_alignments/snp_subset.tsv
 
+#(base) riyarampalli@MacBookPro distortopia % python scripts/create_f1_hybrid.py \
+  #--ref-fasta path/to/ref.fna \
+  #--alt-fasta path/to/alt.fna \
+  #--snp-tsv genomes/par_alignments/snp_subset.tsv \
+  #--reps 1
 
 
 
