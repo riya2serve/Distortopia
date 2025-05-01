@@ -79,12 +79,12 @@ def simulate_f1_genome(ref_genome, alt_genome, contig_pairs, rep, output_dir):
 
     return f1_table
 
-def main(ref_dir, alt_dir, snp_tsv, output_dir, n_replicates):
+def main(ref_fasta_path, alt_fasta_path, snp_tsv, output_dir, n_replicates):
     os.makedirs(output_dir, exist_ok=True)
 
     print("Loading reference and alternate genomes...")
-    ref_genome = load_fasta(ref_dir)
-    alt_genome = load_fasta(alt_dir)
+    ref_genome = load_fasta(ref_fasta_path) #only full path accepted
+    alt_genome = load_fasta(alt_fasta_path) #only full path accepted
     contig_pairs = load_aligned_contigs(snp_tsv)
 
     all_f1_tables = []
@@ -99,8 +99,8 @@ def main(ref_dir, alt_dir, snp_tsv, output_dir, n_replicates):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Simulate F1 hybrids using aligned contigs from SNP TSV.")
-    parser.add_argument("--ref-dir", required=True, help="Path to parent 1 genome (.fna)")
-    parser.add_argument("--alt-dir", required=True, help="Path to parent 2 genome (.fna)")
+    parser.add_argument("--ref-fasta", required=True, help="Path to selected parent 1 FASTA (.fna)") #accept full path
+    parser.add_argument("--alt-fasta", required=True, help="Path to selected parent 2 FASTA (.fna)") #accept full path
     parser.add_argument("--snp-tsv", required=True, help="Path to snp_positions.tsv from align_parents.py")
     parser.add_argument("--outdir", default="genomes", help="Output directory")
     parser.add_argument("--reps", type=int, default=1, help="Number of F1 replicates to generate")
@@ -108,7 +108,8 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.ref_dir, args.alt_dir, args.snp_tsv, args.outdir, args.reps)
+    main(args.ref_fasta, args.alt_fasta, args.snp_tsv, args.outdir, args.reps)
+
 
 #====
 # EXAMPLE CLI
