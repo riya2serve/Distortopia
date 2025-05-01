@@ -5,6 +5,8 @@ import pandas as pd
 import os
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
+import re
 
 def load_f1_fasta(fasta_path):
     return {record.id: str(record.seq) for record in SeqIO.parse(fasta_path, "fasta")}
@@ -31,6 +33,48 @@ def simulate_long_reads(f1_genome, f1_table, rep, output_dir, read_len=15000, co
     out_path = os.path.join(output_dir, f"f1_reads_rep{rep}.fasta")
     with open(out_path, "w") as out_handle:
         SeqIO.write(records, out_handle, "fasta-2line")
+
+    # ========== Visualization ==========
+    print(f"Generating read visualization for: {out_path}")
+    read_data = []
+    for record in records:
+        match = re.match(r"rep(\d+)_(.+?)_read(\d+)", record.id)
+        if match:
+            rep_id = int(match.group(1))
+            contig = match.group(2)
+            read_index = int(match.group(3))
+            length = len(record.seq)
+            read_data.append((rep_id, contig, read_index, length))
+
+    df = pd.DataFrame(read_data, columns=["rep", "contig", "read_index", "length"])
+    df = df.sort_values(by=["contig", "read_index"])
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    y_offset = 0
+    yticks = []
+    yticklabels = []
+
+    for contig in df["contig"].unique():
+        subset = df[df["contig"] == contig]
+        for _, row in subset.iterrows():
+            ax.barh(y=y_offset, width=row["length"], left=0, height=0.4, color="#4C72B0")
+            y_offset += 1
+        yticks.append(y_offset - len(subset) // 2)
+        yticklabels.append(contig)
+        y_offset += 1
+
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(yticklabels)
+    ax.set_xlabel("Read Length (bp)")
+    ax.set_title(f"Simulated Long Reads per Contig (Rep {rep})")
+
+    os.makedirs("results", exist_ok=True)
+    plot_path = os.path.join("results", f"long_read_map_rep{rep}.png")
+    plt.tight_layout()
+    plt.savefig(plot_path, dpi=300)
+    plt.close()
+    print(f"Visualization saved to: {plot_path}")
+
 
 def main(ref_fasta, alt_fasta, snp_tsv, output_dir, n_reps):
     os.makedirs(output_dir, exist_ok=True)
