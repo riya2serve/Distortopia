@@ -93,3 +93,25 @@ Want to know total number of long reads simulated? Try this:
   #--snp-tsv genomes/par_alignments/snp_positions.tsv \
   #--outdir genomes/f1_simulations \
   #--reps 1
+
+'''
+Print first few header lines of SAM file
+'''
+#head genomes/f1_simulations/rep1_vs_ref.sam
+
+#@HD: Header line
+
+##VN:1.6 = SAM format version 1.6
+
+##SO:unsorted = reads are not sorted
+
+##GO:query = grouped by query name
+
+#@SQ: Sequence dictionary lines (one for each reference contig)
+
+##SN:<name> = sequence name (e.g. CP087126.2)
+
+##LN:<length> = contig length in bp (e.g. 32,638,291 bp)
+
+
+
