@@ -1,31 +1,28 @@
 from Bio import SeqIO
-from Bio.Seq import Seq 
+from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import pandas as pd
 import os
 import argparse
 import numpy as np
 
-"""
-This script simulates haploid F1 hybrid genomes based on minimap2 alignments between parental genomes.
-It uses contig pairs from a .tsv file and simulates crossover events to generate hybrid FASTA files.
-"""
-
 def load_fasta(fasta_path):
-    # Normalize to accession only (no description)
-    return {record.id.split()[0]: str(record.seq) for record in SeqIO.parse(fasta_path, "fasta")}
+    """
+    Loads sequences from a FASTA file into a dictionary: {contig_id: sequence}.
+    """
+    return {record.id: str(record.seq) for record in SeqIO.parse(fasta_path, "fasta")}
 
 def load_aligned_contigs(snp_tsv):
     """
-    Reads aligned contig pairs from the summary TSV file.
-    Cleans whitespace and annotations.
+    Parses the snp_positions.tsv to extract pairs of (ref, alt) contigs.
     """
     df = pd.read_csv(snp_tsv, sep="\t")
-    df["Query"] = df["Query"].str.strip().str.split().str[0]
-    df["Target"] = df["Target"].str.strip().str.split().str[0]
-    return list(zip(df["Query"], df["Target"]))
+    return list(set(zip(df["Target"], df["Query"])))  # Target = ref, Query = alt (check field order!)
 
 def simulate_CO(ref_seq, alt_seq):
+    """
+    Simulates a single crossover between two parental sequences.
+    """
     seq_len = len(ref_seq)
     crossover = np.random.binomial(1, 0.5)
     if crossover:
@@ -44,30 +41,32 @@ def simulate_CO(ref_seq, alt_seq):
             return alt_seq, ("alt", "alt", None)
 
 def simulate_f1_genome(ref_genome, alt_genome, contig_pairs, rep, output_dir):
+    """
+    Simulates a single F1 hybrid genome from matching contig pairs.
+    """
     hybrid_record = []
     f1_table = []
 
-    for ref_chrom, alt_chrom in contig_pairs:
-        if ref_chrom not in ref_genome or alt_chrom not in alt_genome:
-            print(f"Skipping: {ref_chrom} or {alt_chrom} not found in FASTA files")
+    for ref_contig, alt_contig in contig_pairs:
+        if ref_contig not in ref_genome or alt_contig not in alt_genome:
+            print(f"Skipping: {ref_contig} or {alt_contig} not found in FASTA files")
             continue
 
-        ref_seq = ref_genome[ref_chrom]
-        alt_seq = alt_genome[alt_chrom]
-
+        ref_seq = ref_genome[ref_contig]
+        alt_seq = alt_genome[alt_contig]
         hybrid_seq, (left, right, pos) = simulate_CO(ref_seq, alt_seq)
 
         hybrid_record.append(
             SeqRecord(
-                Seq(hybrid_seq.upper()),
-                id=f"{ref_chrom}_rep{rep}",
+                Seq(hybrid_seq),
+                id=f"{ref_contig}_rep{rep}",
                 description="F1_recombinant"
             )
         )
         f1_table.append({
             "rep": rep,
-            "ref_chrom": ref_chrom,
-            "alt_chrom": alt_chrom,
+            "ref_chrom": ref_contig,
+            "alt_chrom": alt_contig,
             "left": left,
             "right": right,
             "crossover_pos": pos if pos is not None else "None"
@@ -79,12 +78,14 @@ def simulate_f1_genome(ref_genome, alt_genome, contig_pairs, rep, output_dir):
 
     return f1_table
 
-def main(ref_fasta_path, alt_fasta_path, snp_tsv, output_dir, n_replicates):
+def main(ref_fasta, alt_fasta, snp_tsv, output_dir, n_replicates):
     os.makedirs(output_dir, exist_ok=True)
 
-    print("Loading reference and alternate genomes...")
-    ref_genome = load_fasta(ref_fasta_path) #only full path accepted
-    alt_genome = load_fasta(alt_fasta_path) #only full path accepted
+    print("Loading parent FASTAs...")
+    ref_genome = load_fasta(ref_fasta)
+    alt_genome = load_fasta(alt_fasta)
+
+    print("Parsing aligned contig pairs from SNP TSV...")
     contig_pairs = load_aligned_contigs(snp_tsv)
 
     all_f1_tables = []
@@ -95,21 +96,20 @@ def main(ref_fasta_path, alt_fasta_path, snp_tsv, output_dir, n_replicates):
 
     df = pd.DataFrame(all_f1_tables)
     df.to_csv(os.path.join(output_dir, "f1_table.csv"), index=False)
-    print("All F1 simulations complete. Outputs written to:", output_dir)
+    print(f"Done. F1 genomes written to: {output_dir}")
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Simulate F1 hybrids using aligned contigs from SNP TSV.")
-    parser.add_argument("--ref-fasta", required=True, help="Path to selected parent 1 FASTA (.fna)") #accept full path
-    parser.add_argument("--alt-fasta", required=True, help="Path to selected parent 2 FASTA (.fna)") #accept full path
-    parser.add_argument("--snp-tsv", required=True, help="Path to snp_positions.tsv from align_parents.py")
-    parser.add_argument("--outdir", default="genomes", help="Output directory")
-    parser.add_argument("--reps", type=int, default=1, help="Number of F1 replicates to generate")
+    parser = argparse.ArgumentParser(description="Simulate recombined F1 hybrid genome(s) from parental FASTAs.")
+    parser.add_argument("--ref-fasta", required=True, help="Path to parent 1 genome (.fna)")
+    parser.add_argument("--alt-fasta", required=True, help="Path to parent 2 genome (.fna)")
+    parser.add_argument("--snp-tsv", required=True, help="Path to SNP positions TSV from align_parents.py")
+    parser.add_argument("--outdir", default="genomes/f1_simulations", help="Output directory for F1s")
+    parser.add_argument("--reps", type=int, default=1, help="Number of replicate F1s to simulate")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
     main(args.ref_fasta, args.alt_fasta, args.snp_tsv, args.outdir, args.reps)
-
 
 #====
 # EXAMPLE CLI
