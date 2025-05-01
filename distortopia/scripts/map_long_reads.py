@@ -13,8 +13,8 @@ def run_minimap2(ref_fasta, reads_fasta, paf_out, threads=4):
 
 def parse_paf(paf_path):
     cols = [
-        "ref_name", "ref_len", "ref_start", "ref_end", "strand",
-        "alt_name", "alt_len", "alt_start", "alt_end",
+        "query_name", "query_len", "query_start", "query_end", "strand",
+        "target_name", "target_len", "target_start", "target_end",
         "n_match", "aln_len", "mapq"
     ]
     records = []
