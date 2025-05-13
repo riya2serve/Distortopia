@@ -185,9 +185,9 @@ User input should look something like this w/ argparse flags:
 
 #bash
 ##python simparents.py \
-###--ref-dir user-data/Arabidopsis_thaliana \
-###--query-dir user-data/Arabidopsis_lyrata \
-###--out genomes/athal_vs_alyr.paf \
+###--ref-dir input-data/Arabidopsis_thaliana \
+###--query-dir input-data/Arabidopsis_lyrata \
+###--out genomes/par_alignments/ref_vs_alt.paf \
 ###--threads 8
 '''
 A safer option is as follows:
