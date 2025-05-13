@@ -4,17 +4,17 @@
 Simulating F1 Hybrids and Detecting Segregation Distortion from Genomic Data
 
 ## Project Overview
-Distortopia is a command-line toolkit for simulating haploid F1 hybrid genomes from diploid parental genomes and supporting analysis of segregation distortion. It is designed for researchers studying hybridization, recombination, genome evolution, or marker bias.
-
-Distortopia is currently implemented as a collection of modular Python scripts. Future development will package those into a unified CLI tool. 
+Distortopia is a Python toolkit for simulating haploid F1 hybrid genomes, from diploid parents, and analyzing segregation distortion. Built for evolutionary biologists and genomicists, it automates hybrid genome generation, alignment, long-read simulation, and visual analysis using real SNP positions. 
 
 ---
 
 ### Current Capabilities
-- Download genomes and annotations from NCBI
-- Simulate haploid F1 hybrid genomes based on parental SNP differences
-- Align hybrid genomes to reference genomes using `minimap2`
-- Visualize genome alignment using external dotplot tools like `D-Genies`
+1. Downloads parental ("reference") genomes via NCBI CLI tools
+2. Compares parental genomes to detect SNPS and indels
+3. Simulates recombinat F1 hybrid genomes with or without crossover events
+4. Simulates long reads from F1 genomes and aligns them to parents using `minimap2`
+5. Visualizes outputs `.paf`, `.sam`, `.tsv`, and styled `.html` reports
+
 
 ### Installation 
 To install the development version locally and contribute to the code:
@@ -24,9 +24,11 @@ To install the development version locally and contribute to the code:
 git clone https://github.com/riya2serve/Distortopia.git
 cd Distortopia
 ```
-you may also install (or clone) and build `minimap2` separately if needed:
+You may also install (or clone and build) `minimap2` separately if needed:
 ```bash
 brew install minimap2 #using homebrew (ideal for Mac users)
+
+#OR manually:
 git clone https://github.com/lh3/minimap2.git #cloning
 cd minimap2
 make 
@@ -38,22 +40,21 @@ With **conda**:
 conda install python=3.10 biopython pandas matplotlib -c conda-forge
 conda install -c bioconda minimap2 ncbi-datasets-cli
 ```
-or with **pip**:
+Or with **pip**:
 ```bash
 pip install biopython pandas matplotlib
 pip install ncbi-datasets-pylib
 ```
-
 3. Install the packages in editable mode
 ```bash
 pip install -e .
 ```
 
 ### Usage
-Scripts must be run individually from the command line. Example workflows are provided below
+Scripts must be run individually from the command line. Example workflows are provided below.
 
 #### 1. Fetch Genomes
-Use `fetch_genomes()` in `populatenome.py` to download and rehydrate genomes from NCBI
+Use `choose_fasta()` in `fetch_genomes.py` to download and rehydrate genomes from NCBI
 
 ```bash
 python populatenome.py --extract
