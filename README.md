@@ -12,9 +12,9 @@ Distortopia is a Python toolkit for simulating haploid F1 hybrid genomes, from d
 1. Downloads parental ("reference") genomes via NCBI CLI tools
 2. Compares parental genomes to detect SNPS and indels
 3. Simulates recombinat F1 hybrid genomes with or without crossover events
-4. Simulates long reads from F1 genomes and aligns them to parents using `minimap2`
-5. Visualizes outputs `.paf`, `.sam`, `.tsv`, and styled `.html` reports
-
+4. Simulates long reads from F1 genomes and aligns them to both parents using `minimap2`
+5. Parses alignments into VCF-style TSVs and HTML summaries
+6. Visualizes output reports
 
 ### Installation 
 To install the development version locally and contribute to the code:
@@ -53,11 +53,11 @@ pip install -e .
 ### Usage
 Scripts must be run individually from the command line. Example workflows are provided below.
 
-#### 1. Fetch Genomes
-Use `choose_fasta()` in `fetch_genomes.py` to download and rehydrate genomes from NCBI
+#### 1. Download Parental Genomes
+Use `scripts/fetch_genomes.py`
 
 ```bash
-python populatenome.py --extract
+python scripts/fetch_genomes.py --extract
 ```
 - You will be prompted to enter the species names
 - Use `--force` to overwrite existing downloads
@@ -65,12 +65,13 @@ python populatenome.py --extract
 
 ==== EXAMPLE INTERACTIVE INPUT
 ```bash
-#Species name (or 'done'): 
-#Species name (or 'done'):
+#Species name (or 'done'): Arabidopsis thaliana
+#Species name (or 'done'): Arabidopsis lyrata
+#Species name (or 'done'): done
 #...
 ```
-#### 2. Simulate F1 Hybrid
-Use `simf1poly.py` to simulate a haploid F1 hybrid genome based on SNP alignment data
+#### 2. Compare Parent Genomes and Generate SNP summary
+Use `scripts/align_parents.py `
 
 ```bash
 python simf1poly.py \
@@ -81,31 +82,93 @@ python simf1poly.py \
 ```
 ==== EXAMPLE INTERACTIVE INPUT
 ```bash
-#python simf1poly.py \
-  #--ref-dir user-data/Arabidopsis_thaliana/genome.fna \
-  #--query-dir user-data/Arabidopsis_lyrata/genome.fna \
-  #--snp snp_positions.tsv \
-  #--out F1_hybrid.fna
+python scripts/align_parents.py \
+  --ref-dir input-data/Arabidopsis_thaliana \
+  --alt-dir input-data/Arabidopsis_lyrata \
+  --outdir genomes/par_alignments \
+  --threads 8
 ```
-#### 3. Align Hybrid Reference
-Use `aligning_genomes.py` to align simulated hybrid(s) to reference genome(s) using minimap2
+This outputs:
+- `.paf`: Minimap2 alignment summary
+- `.html`: Visual summary
+- `.snp_positions.tsv`: SNPs coordinates (necessary for F1 simulation)
+```bash
+open genomes/athal_vs_alyr_summary.html
+```
+#### 3. Simulate Recombinant F1 hybrids 
+Use `scripts/create_f1_hybrid.py`
 
 ```bash
-python simf1poly.py \
---ref-dir path/to/parent1.fna \
---query-dir path/to/f1_hybrid.fna \
---out hybrid_vs_parent1.paf \
---mode paf
+python scripts/create_f1_hybrid.py \
+  --ref-fasta path/to/ref.fna \
+  --alt-fasta path/to/alt.fna \
+  --snp-tsv genomes/par_alignments/snp_positions.tsv \
+  --outdir genomes/f1_simulations \
+  --reps 3
 ```
-- Default file output is `.paf` (for dotplot visualization)
-- You can optionally choose to output `.sam` (for genome browser visualizations; e.g. IGV)
+This outputs: 
+- `f1_genome_repx.fna`, `f1_table.csv`
+To reduce scope for debugging and avoiding error:
+```bash
+head -n 10 genomes/par_alignments/snp_positions.tsv > genomes/par_alignments/snp_subset.tsv
+```
+#### 4. Simulate Long Reads 
+Use `scripts/long_reads.py`
 
+```bash
+python scripts/long_reads.py \
+  --ref-fasta input-data/Arabidopsis_thaliana/ncbi_dataset/data/GCA_020911765.2/GCA_020911765.2_ASM2091176v2_genomic.fna \
+  --alt-fasta input-data/Arabidopsis_lyrata/ncbi_dataset/data/GCA_000524985.1/GCA_000524985.1_Alyr_1.0_genomic.fna \
+  --snp-tsv genomes/par_alignments/snp_positions.tsv \
+  --outdir genomes/f1_simulations \
+  --reps 1
+```
+This outputs:
+- `f1_reads_repx.fasta`
+Want to know the total number of long reads generated? Try this:
+```bash
+grep ">" genomes/f1_simulations/f1_reads_rep1.fasta | wc -l
+```
 ==== EXAMPLE INTERACTIVE INPUT
 ```bash
-#python aligning_genomes.py \
-  #--ref-dir user-data/Arabidopsis_thaliana/ncbi_dataset/data/GCA_000001735.2/GCA_000001735.2_TAIR10.1_genomic.fna \
-  #--query-dir f1_hybrid.fna \
-  #--out hybrid_vs_ref.paf
+#Field            What it tells you                                   Source
+##POS             Read alignment start on reference genome            SAM field 4
+##crossover_pos   Breakpoint between parental segments in F1 genome   f1_table.csv
+```
+#### 5. Map Long Reads to Reference Genomes
+Use `scripts/map_long_reads.py`
+
+```bash
+python scripts/map_long_reads.py \
+  --ref-fasta input-data/Arabidopsis_thaliana/ncbi_dataset/data/GCA_020911765.2/GCA_020911765.2_ASM2091176v2_genomic.fna \
+  --alt-fasta input-data/Arabidopsis_lyrata/ncbi_dataset/data/GCA_000524985.1/GCA_000524985.1_Alyr_1.0_genomic.fna \
+  --snp-tsv genomes/par_alignments/snp_positions.tsv \
+  --outdir genomes/f1_simulations \
+  --reps 1 \
+  --threads 8
+```
+This outputs:
+- `repx_vs_alt.sam`, `repx_vs_ref.sam`
+
+#### 6. Parse `.sam` outputs to a VCF-like Output Summary File
+Use `scripts/sam_to_vcf.py`
+
+```bash
+python scripts/sam_to_vcf.py \
+  --sam-ref distortopia/genomes/f1_simulations/rep1_vs_ref.sam \
+  --sam-alt distortopia/genomes/f1_simulations/rep1_vs_alt.sam \
+  --output distortopia/genomes/f1_simulations/rep1_long_read_alignment.vcf.tsv \
+  --rep 1
+```
+This produces a TSV output that summarizes real SNP positions, REF/ALT alleles, and alignment metadata
+
+#### 7. Visualize F1 Mapping Output
+Use `scripts/visualize_f1_csv.py`
+
+```bash
+python scripts/visualize_f1_csv.py \
+  --input genomes/f1_simulations/rep1_ref_variants.tsv \
+  --f1-table genomes/f1_simulations/f1_table.csv
 ```
 
 ### Future Plans 
