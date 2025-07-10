@@ -2,3 +2,12 @@ __pycache__/
 *.pyc
 .env/
 .DS_Store
+
+# ignore large genome files
+A_lyrata.fna
+A_thaliana.fna
+*.fna
+*.fq
+*.sam
+*.bam
+*.vcf

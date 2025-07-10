@@ -5,10 +5,32 @@ import concurrent.futures
 import pandas as pd
 import io
 import matplotlib.pyplot as plt
-import recombination_rate
 
 st.set_page_config(page_title="Distortopia Variant Simulation", layout="centered")
 st.title("Distortopia: Simulate F1 Hybrid Genome")
+
+# --- Simulate long reads ---
+from distortopia.simulate_long_reads import simulate_long_reads
+
+st.subheader("Simulate Long Reads from Reference Genomes")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button("Simulate A_lyrata Reads"):
+        with st.spinner("Simulating A_lyrata long reads..."):
+            out1 = simulate_long_reads("A_lyrata.fna", "sim_lyrata.fq", coverage="60x")
+            st.success("A_lyrata reads generated.")
+            with open(out1, "rb") as f:
+                st.download_button("Download A_lyrata.fq.gz", f, file_name="sim_lyrata.fq.gz")
+
+with col2:
+    if st.button("Simulate A_thaliana Reads"):
+        with st.spinner("Simulating A_thaliana long reads..."):
+            out2 = simulate_long_reads("A_thaliana.fna", "sim_thaliana.fq", coverage="60x")
+            st.success("A_thaliana reads generated.")
+            with open(out2, "rb") as f:
+                st.download_button("Download A_thaliana.fq.gz", f, file_name="sim_thaliana.fq.gz")
 
 # --- Detect input files ---
 fnas = sorted([f for f in os.listdir() if f.endswith(".fna")])
