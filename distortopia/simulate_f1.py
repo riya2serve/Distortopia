@@ -2,12 +2,14 @@ import sys
 from Bio import SeqIO
 
 def load_reference(fasta_file):
+    """Loads a reference genome into a dictionary."""
     ref = {}
     for record in SeqIO.parse(fasta_file, "fasta"):
         ref[record.id] = list(record.seq)
     return ref
 
 def apply_variants(reference, vcf_file):
+    "Applies SNP variants identified in VCF file to reference genome."""
     with open(vcf_file) as f:
         for line in f:
             if line.startswith("#"):
@@ -19,6 +21,7 @@ def apply_variants(reference, vcf_file):
     return reference
 
 def write_fasta(reference, output_file):
+    """Writes the modified reference genome to a new FASTA file."""
     with open(output_file, "w") as out:
         for chrom in reference:
             seq = "".join(reference[chrom])
@@ -26,14 +29,9 @@ def write_fasta(reference, output_file):
             for i in range(0, len(seq), 60):
                 out.write(seq[i:i+60] + "\n")
 
-if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python generate_f1_hybrid.py ref.fna variants.vcf output.fna")
-        sys.exit(1)
-
-    ref_fasta, variant_vcf, output_fasta = sys.argv[1], sys.argv[2], sys.argv[3]
-
+def generate_f1_hybrid(ref_fasta, vcf_file, output_fasta):
+    """Callable function to simulate the hybrids."""
     ref_seq = load_reference(ref_fasta)
     modified = apply_variants(ref_seq, variant_vcf)
     write_fasta(modified, output_fasta)
-    print(f" F1 hybrid FASTA written to {output_fasta}")
+    print(f"F1 hybrid FASTA written to {output_fasta}")

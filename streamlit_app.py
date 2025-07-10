@@ -7,22 +7,26 @@ import io
 import matplotlib.pyplot as plt
 import recombination_rate
 
-st.set_page_config(page_title="COmapper Variant Calling", layout="centered")
-st.title("COmapper: Local Variant Calling Test")
+st.set_page_config(page_title="Distortopia Variant Simulation", layout="centered")
+st.title("Distortopia: Simulate F1 Hybrid Genome")
 
 # --- Detect input files ---
 fnas = sorted([f for f in os.listdir() if f.endswith(".fna")])
 fqs = sorted([f for f in os.listdir() if f.endswith(".fq")])
 
-# --- Require specific files ---
 required_refs = {"A_lyrata.fna", "A_thaliana.fna"}
 required_fqs = {"sim_lyrata.fq", "sim_thaliana.fq"}
 
-if not required_refs.issubset(fnas) or not required_fqs.issubset(fqs):
-    st.error("Missing one or more required files: A_lyrata.fna, A_thaliana.fna, sim_lyrata.fq, sim_thaliana.fq")
+# --- Require input ---
+if not required_refs.issubset(set(fnas)):
+    st.error(f"Missing required reference FASTA files: {required_refs - set(fnas)}")
     st.stop()
 
-# --- Input combinations ---
+if not required_fqs.issubset(set(fqs)):
+    st.error(f"Missing required FASTQ files: {required_fqs - set(fqs)}")
+    st.stop()
+
+# --- Show inputs ---
 inputs = [
     ("A_lyrata.fna", "sim_lyrata.fq", "sim_lyrata.vcf"),
     ("A_thaliana.fna", "sim_thaliana.fq", "sim_thaliana.vcf")
@@ -67,7 +71,17 @@ if st.button("Run both pipelines"):
             else:
                 st.error(f" Failed to generate {vcf_file}")
 
-# --- Optional: Display most recent VCF ---
+# --- Simulate F1 hybrid from one reference + variant set ---
+from distortopia.simulate_f1 import generate_f1_hybrid
+
+if os.path.exists("A_thaliana.fna") and os.path.exists("sim_thaliana.vcf"):
+    if st.button("Generate F1 Hybrid Genome"):
+        generate_f1_hybrid("A_thaliana.fna", "sim_thaliana.vcf", "F1.fna")
+        st.success("F1 genome simulated as F1.fna")
+        with open("F1.fna") as f:
+            st.download_button("Download F1.fna", f.read(), file_name="F1.fna")
+
+# --- Display most recent VCFs ---
 for vcf in ["sim_lyrata.vcf", "sim_thaliana.vcf"]:
     if os.path.exists(vcf):
         st.subheader(f"Variant Table: {vcf}")
@@ -76,56 +90,5 @@ for vcf in ["sim_lyrata.vcf", "sim_thaliana.vcf"]:
         df = pd.read_csv(io.StringIO("".join(lines)), sep='\t')
         st.dataframe(df)
 
-# --- Load all 3 VCFs ---
-def load_vcf_positions(vcf_file):
-    with open(vcf_file) as f:
-        lines = [l for l in f if not l.startswith("##")]
-    if not lines:
-        return set()
-    df = pd.read_csv(io.StringIO("".join(lines)), sep="\t")
-    return set(zip(df["#CHROM"], df["POS"]))
-
-if st.checkbox("Compare variant positions across F1 and parents"):
-
-    f1_pos = load_vcf_positions("F1.vcf")
-    thaliana_pos = load_vcf_positions("sim_thaliana.vcf")
-    lyrata_pos = load_vcf_positions("sim_lyrata.vcf")
-
-    all_pos = {
-        "F1": f1_pos,
-        "Thaliana": thaliana_pos,
-        "Lyrata": lyrata_pos
-    }
-
-    shared_all = f1_pos & thaliana_pos & lyrata_pos
-    f1_unique = f1_pos - (thaliana_pos | lyrata_pos)
-    thaliana_unique = thaliana_pos - (f1_pos | lyrata_pos)
-    lyrata_unique = lyrata_pos - (f1_pos | thaliana_pos)
-
-    st.write(f" Shared in all 3: {len(shared_all)}")
-    st.write(f" F1 only: {len(f1_unique)}")
-    st.write(f" Thaliana only: {len(thaliana_unique)}")
-    st.write(f" Lyrata only: {len(lyrata_unique)}")
-
-    # --- Visualization ---
-    labels = ["Shared All", "F1 only", "Thaliana only", "Lyrata only"]
-    counts = [len(shared_all), len(f1_unique), len(thaliana_unique), len(lyrata_unique)]
-
-    fig, ax = plt.subplots()
-    ax.bar(labels, counts)
-    ax.set_ylabel("SNP count")
-    ax.set_title("Shared vs. Unique Variant Positions")
-    st.pyplot(fig)
-
-if st.checkbox("Estimate recombination rate from VCFs"):
-    switches, informative_sites = recombination_rate.estimate_recombination_rate_v2(
-        "sim_thaliana.vcf", "sim_lyrata.vcf", "F1.vcf"
-    )
-    st.subheader("Recombination Summary")
-    st.write(f"Number of informative sites: {informative_sites}")
-    st.write(f"Number of allele switches (crossovers): {switches}")
-    if informative_sites > 1:
-        rate = switches / informative_sites
-        st.write(f"Estimated recombination rate: **{rate:.4f} crossovers per site**")
 
 
