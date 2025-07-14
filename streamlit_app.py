@@ -34,18 +34,27 @@ with col2:
 
 # --- Detect input files ---
 fnas = sorted([f for f in os.listdir() if f.endswith(".fna")])
-fqs = sorted([f for f in os.listdir() if f.endswith(".fq")])
+fq_files = os.listdir()
+fqs = sorted([
+    f for f in fq_files
+    if f.endswith(".fq") or f.endswith("fq.gz")
+])
 
 required_refs = {"A_lyrata.fna", "A_thaliana.fna"}
-required_fqs = {"sim_lyrata.fq", "sim_thaliana.fq"}
+required_fqs = {"sim_lyrata.fq.gz", "sim_thaliana.fq.gz"}
+
+missing_fqs = {
+    fq for fq in required_fqs
+    if fq not in fqs and fq + ".gz" not in fqs
+}
 
 # --- Require input ---
 if not required_refs.issubset(set(fnas)):
     st.error(f"Missing required reference FASTA files: {required_refs - set(fnas)}")
     st.stop()
 
-if not required_fqs.issubset(set(fqs)):
-    st.error(f"Missing required FASTQ files: {required_fqs - set(fqs)}")
+if missing_fqs:
+    st.error(f"Missing required FASTQ files: {missing_fqs}")
     st.stop()
 
 # --- Show inputs ---

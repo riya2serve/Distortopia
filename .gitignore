@@ -8,6 +8,7 @@ A_lyrata.fna
 A_thaliana.fna
 *.fna
 *.fq
+*.fq.gz
 *.sam
 *.bam
 *.vcf
