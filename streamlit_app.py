@@ -19,7 +19,7 @@ col1, col2 = st.columns(2)
 with col1:
     if st.button("Simulate A_lyrata Reads"):
         with st.spinner("Simulating A_lyrata long reads..."):
-            out1 = simulate_long_reads("A_lyrata.fna", "sim_lyrata.fq", coverage="60x")
+            out1 = simulate_long_reads("A_lyrata.fna", "sim_lyrata.fq.gz", coverage="60x")
             st.success("A_lyrata reads generated.")
             with open(out1, "rb") as f:
                 st.download_button("Download A_lyrata.fq.gz", f, file_name="sim_lyrata.fq.gz")
@@ -27,7 +27,7 @@ with col1:
 with col2:
     if st.button("Simulate A_thaliana Reads"):
         with st.spinner("Simulating A_thaliana long reads..."):
-            out2 = simulate_long_reads("A_thaliana.fna", "sim_thaliana.fq", coverage="60x")
+            out2 = simulate_long_reads("A_thaliana.fna", "sim_thaliana.fq.gz", coverage="60x")
             st.success("A_thaliana reads generated.")
             with open(out2, "rb") as f:
                 st.download_button("Download A_thaliana.fq.gz", f, file_name="sim_thaliana.fq.gz")
@@ -59,8 +59,8 @@ if missing_fqs:
 
 # --- Show inputs ---
 inputs = [
-    ("A_lyrata.fna", "sim_lyrata.fq", "sim_lyrata.vcf"),
-    ("A_thaliana.fna", "sim_thaliana.fq", "sim_thaliana.vcf")
+    ("A_lyrata.fna", "sim_lyrata.fq.gz", "sim_lyrata.vcf"),
+    ("A_thaliana.fna", "sim_thaliana.fq.gz", "sim_thaliana.vcf")
 ]
 
 # --- Display detected files ---
