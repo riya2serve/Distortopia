@@ -43,12 +43,8 @@ fqs = sorted([
 required_refs = {"A_lyrata.fna", "A_thaliana.fna"}
 required_fqs = {"sim_lyrata.fq.gz", "sim_thaliana.fq.gz"}
 
-missing_fqs = {
-    fq for fq in required_fqs
-    if fq not in fqs and fq + ".gz" not in fqs
-}
+missing_fqs = required_fqs - set(fqs)
 
-# --- Require input ---
 if not required_refs.issubset(set(fnas)):
     st.error(f"Missing required reference FASTA files: {required_refs - set(fnas)}")
     st.stop()
@@ -57,18 +53,17 @@ if missing_fqs:
     st.error(f"Missing required FASTQ files: {missing_fqs}")
     st.stop()
 
-# --- Show inputs ---
+# --- Show detected files ---
 inputs = [
     ("A_lyrata.fna", "sim_lyrata.fq.gz", "sim_lyrata.vcf"),
     ("A_thaliana.fna", "sim_thaliana.fq.gz", "sim_thaliana.vcf")
 ]
 
-# --- Display detected files ---
 for ref, fq, _ in inputs:
     st.success(f"Found reference genome: {ref}")
     st.success(f"Found FASTQ file: {fq}")
 
-# --- Variant calling pipeline function ---
+# --- Variant calling function ---
 def run_pipeline(ref, fq, vcf_out):
     sam = fq.replace(".fq", ".sam")
     bam = fq.replace(".fq", ".bam")
@@ -85,10 +80,9 @@ def run_pipeline(ref, fq, vcf_out):
 
     return vcf_out
 
-# --- Run pipelines when button is clicked ---
+# --- Run pipelines ---
 if st.button("Run both pipelines"):
     st.info("Running alignments and variant calling in parallel...")
-
     vcf_files = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [executor.submit(run_pipeline, *args) for args in inputs]
@@ -102,17 +96,18 @@ if st.button("Run both pipelines"):
             else:
                 st.error(f" Failed to generate {vcf_file}")
 
-# --- Simulate F1 hybrid from one reference + variant set ---
-from distortopia.simulate_f1 import generate_f1_hybrid
+# --- Generate F1 Hybrid (dual-parent) ---
+from generate_f1_hybrid import generate_f1_hybrid
 
-if os.path.exists("A_thaliana.fna") and os.path.exists("sim_thaliana.vcf"):
-    if st.button("Generate F1 Hybrid Genome"):
-        generate_f1_hybrid("A_thaliana.fna", "sim_thaliana.vcf", "F1.fna")
-        st.success("F1 genome simulated as F1.fna")
-        with open("F1.fna") as f:
-            st.download_button("Download F1.fna", f.read(), file_name="F1.fna")
+if all(os.path.exists(f) for f in ["A_thaliana.fna", "sim_thaliana.vcf", "sim_lyrata.vcf"]):
+    if st.button("Generate F1 Hybrid Genome (dual-parent with IUPAC)"):
+        generate_f1_hybrid("A_thaliana.fna", "sim_thaliana.vcf", "sim_lyrata.vcf", "F1_hybrid.fna")
+        st.success("F1 hybrid genome simulated as F1_hybrid.fna")
 
-# --- Display most recent VCFs ---
+        with open("F1_hybrid.fna") as f:
+            st.download_button("Download F1_hybrid.fna", f.read(), file_name="F1_hybrid.fna")
+
+# --- Display VCF Tables ---
 for vcf in ["sim_lyrata.vcf", "sim_thaliana.vcf"]:
     if os.path.exists(vcf):
         st.subheader(f"Variant Table: {vcf}")
