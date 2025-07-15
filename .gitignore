@@ -12,3 +12,5 @@ A_thaliana.fna
 *.sam
 *.bam
 *.vcf
+*.mmi
+*.fai
