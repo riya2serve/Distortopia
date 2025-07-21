@@ -14,3 +14,4 @@ A_thaliana.fna
 *.vcf
 *.mmi
 *.fai
+*.bam.bai
