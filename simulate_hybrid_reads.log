@@ -1,0 +1,9 @@
+[2025-07-17 09:19:34] Running Badread: badread simulate --reference F1_hybrid.fna --quantity 60x --error_model pacbio --qscore_model pacbio --output F1_hybrid.fq
+[2025-07-17 09:19:34] Badread failed: Command '['badread', 'simulate', '--reference', 'F1_hybrid.fna', '--quantity', '60x', '--error_model', 'pacbio', '--qscore_model', 'pacbio', '--output', 'F1_hybrid.fq']' returned non-zero exit status 2.
+[2025-07-17 09:21:59] Running Badread: badread simulate --reference F1_hybrid.fna --quantity 60x --error_model pacbio --qscore_model pacbio F1_hybrid.fq
+[2025-07-17 09:21:59] Badread failed: Command '['badread', 'simulate', '--reference', 'F1_hybrid.fna', '--quantity', '60x', '--error_model', 'pacbio', '--qscore_model', 'pacbio', 'F1_hybrid.fq']' returned non-zero exit status 2.
+[2025-07-17 09:26:35] Running Badread: badread simulate --reference F1_hybrid.fna --quantity 60x --error_model pacbio --qscore_model pacbio --output_base F1_hybrid
+[2025-07-17 09:26:35] Badread failed: Command '['badread', 'simulate', '--reference', 'F1_hybrid.fna', '--quantity', '60x', '--error_model', 'pacbio', '--qscore_model', 'pacbio', '--output_base', 'F1_hybrid']' returned non-zero exit status 2.
+[2025-07-17 09:29:23] Running Badread: badread simulate --reference F1_hybrid.fna --quantity 60x --length 8000,3000 --error_model pacbio2021
+[2025-07-18 09:05:03] ✅ Output gzipped: F1_hybrid.gz
+[2025-07-18 10:37:08] Running Badread: badread simulate --reference F1_hybrid.fna --quantity 60x --length 8000,3000 --error_model pacbio2021
