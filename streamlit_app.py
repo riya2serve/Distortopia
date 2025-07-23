@@ -11,6 +11,8 @@ from distortopia.variant_calling import call_variants
 from distortopia.simulate_f1 import generate_f1_from_files as generate_f1_hybrid
 from distortopia.snp_detection import run_pipeline
 from distortopia.f1_variant_calling import call_f1_variants
+from distortopia.compare_variants import load_vcf_as_df, generate_snp_marker_table
+from distortopia.detect_crossovers import detect_crossovers
 
 st.set_page_config(page_title="Distortopia: Simulate F1 Genome", layout="centered")
 st.title("🌱 Distortopia: Simulate F1 Hybrid and Map Recombination")
@@ -83,17 +85,6 @@ if st.button("🚀 Run Alignment + Variant Calling for Both"):
                     st.download_button(f"⬇️ Download {vcf}", f.read(), file_name=vcf)
             else:
                 st.error(f"❌ Failed to generate {vcf}")
-
-# --- Visualize VCF tables ---
-st.subheader("🧬 SNP Tables from Variant Calling")
-
-for vcf_file in ["sim_lyrata.vcf", "sim_thaliana.vcf"]:
-    if os.path.exists(vcf_file):
-        st.markdown(f"**{vcf_file}**")
-        with open(vcf_file) as f:
-            lines = [l for l in f if not l.startswith("##")]
-        df = pd.read_csv(io.StringIO("".join(lines)), sep="\t")
-        st.dataframe(df)
 
 # --- Generate F1 hybrid ---
 st.subheader("3️⃣ Simulate F1 Hybrid Genome")
@@ -176,7 +167,115 @@ if all(os.path.exists(f) for f in required_bams + required_refs):
 else:
     st.warning("⚠️ Missing files for variant calling (check for .bam and .fna files).")
 
+# --- Compare Variants in F1 to both Parents ---
+st.subheader("7️⃣ Step 7: Compare F1 Variants to Parental SNPs")
 
+if all(os.path.exists(f) for f in ["sim_thaliana.vcf", "sim_lyrata.vcf", "F1_to_thaliana.vcf", "F1_to_lyrata.vcf"]):
 
+    # Load VCFs into DataFrames
+    f1_thal_df = load_vcf_as_df("F1_to_thaliana.vcf", ref_name="Thaliana", alt_name="F1")
+    sim_thal_df = load_vcf_as_df("sim_thaliana.vcf", ref_name="Thaliana", alt_name="Sim")
+    f1_lyr_df  = load_vcf_as_df("F1_to_lyrata.vcf", ref_name="Lyrata", alt_name="F1")
+    sim_lyr_df = load_vcf_as_df("sim_lyrata.vcf", ref_name="Lyrata", alt_name="Sim")
 
+    # 🔍 Compare F1 to A. thaliana
+    st.markdown("#### 🔍 Compare F1 to A. thaliana")
+    merged_thal = pd.merge(f1_thal_df, sim_thal_df, on=["CHROM", "POS"], how="outer", indicator=True, suffixes=("_F1", "_Thaliana"))
+    shared_thal = merged_thal[merged_thal["_merge"] == "both"]
+    f1_unique_thal = merged_thal[merged_thal["_merge"] == "left_only"]
+
+    st.write(f"Shared SNPs: {len(shared_thal)}")
+    st.write(f"F1-unique SNPs: {len(f1_unique_thal)}")
+
+    # 🔍 Compare F1 to A. lyrata
+    st.markdown("#### 🔍 Compare F1 to A. lyrata")
+    merged_lyr = pd.merge(f1_lyr_df, sim_lyr_df, on=["CHROM", "POS"], how="outer", indicator=True, suffixes=("_F1", "_Lyrata"))
+    shared_lyr = merged_lyr[merged_lyr["_merge"] == "both"]
+    f1_unique_lyr = merged_lyr[merged_lyr["_merge"] == "left_only"]
+
+    st.write(f"Shared SNPs: {len(shared_lyr)}")
+    st.write(f"F1-unique SNPs: {len(f1_unique_lyr)}")
+
+    # 🧪 Optional: Write SNP marker table to disk for downstream use
+    if not os.path.exists("compare_variants_output.tsv"):
+        try:
+            marker_df = pd.merge(sim_thal_df, sim_lyr_df, on=["CHROM", "POS"], how="inner")
+            marker_df = marker_df[["CHROM", "POS", "Thaliana", "Lyrata"]]
+            marker_df.to_csv("compare_variants_output.tsv", sep="\t", index=False)
+            st.success("✅ SNP marker table saved as compare_variants_output.tsv")
+        except Exception as e:
+            st.error(f"❌ Failed to write SNP marker table: {e}")
+else:
+    st.warning("❌ Required VCF files not found. Please complete earlier steps first.")
+
+# --- Detect Crossovers ---
+st.subheader("8️⃣ Step 8: Detect Crossovers from F1 Reads")
+
+if os.path.exists("compare_variants_output.tsv"):
+    
+    tab1, tab2 = st.tabs(["🧬 F1 → A. thaliana", "🧬 F1 → A. lyrata"])
+
+    with tab1:
+        if os.path.exists("F1_to_thaliana.sort.bam"):
+            if st.button("Run Crossover Detection (Thaliana)"):
+                with st.spinner("Running crossover detection on F1_to_thaliana.sort.bam..."):
+                    detect_crossovers(
+                        bam_path="F1_to_thaliana.sort.bam",
+                        marker_table_path="compare_variants_output.tsv",
+                        output_path="crossovers_thaliana.tsv"
+                    )
+                st.success("✅ Thaliana crossover detection complete. Results saved to `crossovers_thaliana.tsv`.")
+
+            if os.path.exists("crossovers_thaliana.tsv"):
+                co_df_thal = pd.read_csv("crossovers_thaliana.tsv", sep="\t")
+                st.write(f"🔍 Detected {co_df_thal['num_crossovers'].sum()} crossovers in {len(co_df_thal)} reads.")
+                if st.checkbox("Show Thaliana crossover calls"):
+                    st.dataframe(co_df_thal[["qname", "chrom", "start", "end", "pattern", "num_crossovers"]].head(100))
+        else:
+            st.warning("❌ File `F1_to_thaliana.sort.bam` not found.")
+
+    with tab2:
+        if os.path.exists("F1_to_lyrata.sort.bam"):
+            if st.button("Run Crossover Detection (Lyrata)"):
+                with st.spinner("Running crossover detection on F1_to_lyrata.sort.bam..."):
+                    detect_crossovers(
+                        bam_path="F1_to_lyrata.sort.bam",
+                        marker_table_path="compare_variants_output.tsv",
+                        output_path="crossovers_lyrata.tsv"
+                    )
+                st.success("✅ Lyrata crossover detection complete. Results saved to `crossovers_lyrata.tsv`.")
+
+            if os.path.exists("crossovers_lyrata.tsv"):
+                co_df_lyr = pd.read_csv("crossovers_lyrata.tsv", sep="\t")
+                st.write(f"🔍 Detected {co_df_lyr['num_crossovers'].sum()} crossovers in {len(co_df_lyr)} reads.")
+                if st.checkbox("Show Lyrata crossover calls"):
+                    st.dataframe(co_df_lyr[["qname", "chrom", "start", "end", "pattern", "num_crossovers"]].head(100))
+        else:
+            st.warning("❌ File `F1_to_lyrata.sort.bam` not found.")
+
+else:
+    st.warning("❌ SNP marker table `compare_variants_output.tsv` not found. Run previous steps first.")
+
+# --- Visualize ALL VCF tables ---
+st.subheader("🧬 SNP Tables from Variant Calling")
+
+vcf_files = ["sim_lyrata.vcf", 
+             "sim_thaliana.vcf",
+             "F1_to_lyrata.vcf",
+             "F1_to_thaliana.vcf"
+]
+
+for vcf_file in vcf_files:
+    if os.path.exists(vcf_file):  
+        st.markdown(f"**{vcf_file}**")
+
+        # Let user choose how many rows to preview
+        num_rows = st.slider(f"Rows to preview from {vcf_file}", 50, 100, 500, step=100)
+
+        with open(vcf_file) as f:
+            lines = [l for l in f if not l.startswith("##")]
+
+        df = pd.read_csv(io.StringIO("".join(lines)), sep="\t", nrows=num_rows)
+        st.dataframe(df)
+        st.caption(f"Showing first {num_rows} rows")
 
