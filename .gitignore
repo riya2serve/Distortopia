@@ -4,6 +4,7 @@ __pycache__/
 .DS_Store
 
 # ignore large genome files
+F1_hybrid
 A_lyrata.fna
 A_thaliana.fna
 *.fna
