@@ -113,17 +113,22 @@ def crossover_random_and_sim_reads(reference, var1, var2):
     # and readlen=10000
     # we need 3000 reads per rep to get 60X coverage.
     for i in range(30):
-        chrom_idx, pos_in_chrom = sample_chrom_position(chrom_lens, 10000)
-        seq = ref[chrom_idx][pos_in_chrom:pos_in_chrom + 10000]
-        reads.append(seq)
+        chrom_idx, pos_in_chrom = sample_chrom_position(chrom_lens)
+        try:
+            chrom = ref[chrom_idx].copy()
+            read = chrom[pos_in_chrom:pos_in_chrom + 10000]
+            read.id = f"read{i}"
+            reads.append(read)
+        except IndexError:
+            pass
     return reads
 
 
-
-def sample_chrom_position(chrom_lens, read_len):
+def sample_chrom_position(chrom_lens):
     chrom_starts = np.cumsum([0] + chrom_lens[:-1]).tolist()
     total_len = sum(chrom_lens)
-    rand_pos = np.random.randint(0, total_len - read_len)
+    print(f"Total length:{chrom_lens}")
+    rand_pos = np.random.randint(0, total_len)
     chrom_index = bisect.bisect_right(chrom_starts, rand_pos) - 1
     pos_in_chrom = rand_pos - chrom_starts[chrom_index]
     return chrom_index, pos_in_chrom
@@ -133,10 +138,11 @@ def write_fasta(copies, output_file):
     with open(output_file, "w") as out:
         for rep, reference in copies.items():
             for chrom in reference:
-                seq = "".join(reference[chrom])
-                out.write(f">{chrom}_rep{rep}\n")
-                for i in range(0, len(seq), 60):
-                    out.write(seq[i:i+60] + "\n")
+                seq = reference[chrom]
+                seqstr = "".join(seq[chrom])
+                out.write(f">{chrom}_rep{rep}_{seq.id}\n")
+                for i in range(0, len(seqstr), 60):
+                    out.write(seqstr[i:i+60] + "\n")
 
 #def generate_f1_from_files(ref_fasta, vcf1, vcf2, output_path):
     #ref_seq = load_reference(ref_fasta)
@@ -151,7 +157,7 @@ def generate_f1_from_files(ref_fasta, vcf1, vcf2, output_path, num_reps):
     variants2 = load_variants(vcf2)
     copies = {}
     for i in range(num_reps): #generating multiple F1 fastas
-        f1_seq = crossover_random(ref_seq, variants1, variants2)
+        f1_seq = crossover_random_and_sim_reads(ref_seq, variants1, variants2)
         copies[i] = f1_seq
     write_fasta(copies, output_path)
 
