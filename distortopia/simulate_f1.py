@@ -2,6 +2,8 @@
 
 import sys
 from Bio import SeqIO
+from itertools import chain
+
 
 def load_reference(fasta_file):
     ref = {}
@@ -75,20 +77,31 @@ def crossover_random(reference, var1, var2):
 
 
 
-def write_fasta(reference, output_file):
+def write_fasta(copies, output_file):
     with open(output_file, "w") as out:
-        for chrom in reference:
-            seq = "".join(reference[chrom])
-            out.write(f">{chrom}\n")
-            for i in range(0, len(seq), 60):
-                out.write(seq[i:i+60] + "\n")
+        for rep, reference in copies.items():
+            for chrom in reference:
+                seq = "".join(reference[chrom])
+                out.write(f">{chrom}_rep{rep}\n")
+                for i in range(0, len(seq), 60):
+                    out.write(seq[i:i+60] + "\n")
 
-def generate_f1_from_files(ref_fasta, vcf1, vcf2, output_path):
+#def generate_f1_from_files(ref_fasta, vcf1, vcf2, output_path):
+    #ref_seq = load_reference(ref_fasta)
+    #variants1 = load_variants(vcf1)
+    #variants2 = load_variants(vcf2)
+    #f1_seq = apply_f1_variants(ref_seq, variants1, variants2)
+    #write_fasta(f1_seq, output_path)
+
+def generate_f1_from_files(ref_fasta, vcf1, vcf2, output_path, num_reps):
     ref_seq = load_reference(ref_fasta)
     variants1 = load_variants(vcf1)
     variants2 = load_variants(vcf2)
-    f1_seq = apply_f1_variants(ref_seq, variants1, variants2)
-    write_fasta(f1_seq, output_path)
+    copies = {}
+    for i in range(num_reps): #generating multiple F1 fastas
+        f1_seq = crossover_random(ref_seq, variants1, variants2)
+        copies[i] = f1_seq
+    write_fasta(copies, output_path)
 
 # --- CLI mode ---
 if __name__ == "__main__":
