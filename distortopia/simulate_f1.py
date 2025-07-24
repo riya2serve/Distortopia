@@ -3,6 +3,7 @@
 import sys
 from Bio import SeqIO
 from itertools import chain
+import numpy as np
 
 
 def load_reference(fasta_file):
