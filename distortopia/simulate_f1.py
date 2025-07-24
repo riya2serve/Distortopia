@@ -4,6 +4,7 @@ import sys
 from Bio import SeqIO
 from itertools import chain
 import numpy as np
+import bisect
 
 
 def load_reference(fasta_file):
@@ -51,6 +52,7 @@ def apply_f1_variants(reference, var1, var2):
                 reference[chrom][pos] = code
     return reference
 
+
 def crossover_random(reference, var1, var2):
     ref = reference.copy()
     for chrom in ref:
@@ -76,6 +78,55 @@ def crossover_random(reference, var1, var2):
             ref[chrom][pos] = base
     return ref
 
+
+def crossover_random_and_sim_reads(reference, var1, var2):
+    ref = reference.copy()
+    for chrom in ref:
+        chrom_len = len(chrom)        
+        # random sample whether a crossover occurs on this chrom
+        if not np.random.binomial(1, 0.5):
+            # randomly no crossover pos as 0 or end of chrom pos
+            if np.random.binomial(1, 0.5):
+                crossover_pos = 0
+            else:
+                crossover_pos = chrom_len
+        else:
+            # random uniform sample position of crossover
+            crossover_pos = np.random.uniform(0, chrom_len)
+            
+        # apply variants from var1 until pos, then apply variants from var2
+        for pos in range(len(ref[chrom])):
+            ref_base = ref[chrom][pos]
+            if pos < crossover_pos:
+                base = var1.get(chrom, {}).get(pos, ref_base)
+            else:
+                base = var2.get(chrom, {}).get(pos, ref_base)
+            ref[chrom][pos] = base
+
+    # sample/sim reads from this reference
+    reads = []
+    chrom_lens = [len(i) for i in ref]
+
+    # iterate over copies of the genome
+    # get list of positions to sim reads from
+    # assuming 1000 reps (genomes)
+    # and readlen=10000
+    # we need 3000 reads per rep to get 60X coverage.
+    for i in range(30):
+        chrom_idx, pos_in_chrom = sample_chrom_position(chrom_lens, 10000)
+        seq = ref[chrom_idx][pos_in_chrom:pos_in_chrom + 10000]
+        reads.append(seq)
+    return reads
+
+
+
+def sample_chrom_position(chrom_lens, read_len):
+    chrom_starts = np.cumsum([0] + chrom_lens[:-1]).tolist()
+    total_len = sum(chrom_lens)
+    rand_pos = np.random.randint(0, total_len - read_len)
+    chrom_index = bisect.bisect_right(chrom_starts, rand_pos) - 1
+    pos_in_chrom = rand_pos - chrom_starts[chrom_index]
+    return chrom_index, pos_in_chrom
 
 
 def write_fasta(copies, output_file):
