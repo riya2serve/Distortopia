@@ -56,15 +56,15 @@ def crossover_random(reference, var1, var2):
     for chrom in ref:
         chrom_len = len(chrom)        
         # random sample whether a crossover occurs on this chrom
-        if not np.random.binomial(0.5):
+        if not np.random.binomial(1, 0.5):
             # randomly no crossover pos as 0 or end of chrom pos
-            if np.random.binomial(0.5):
+            if np.random.binomial(1, 0.5):
                 crossover_pos = 0
             else:
                 crossover_pos = chrom_len
         else:
             # random uniform sample position of crossover
-            crossover_pos = np.random.uniform(0, chrom_len, 1)
+            crossover_pos = np.random.uniform(0, chrom_len)
             
         # apply variants from var1 until pos, then apply variants from var2
         for pos in range(len(ref[chrom])):
