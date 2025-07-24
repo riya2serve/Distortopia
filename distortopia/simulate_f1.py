@@ -3,16 +3,6 @@
 import sys
 from Bio import SeqIO
 
-# IUPAC codes for heterozygous SNPs
-IUPAC = {
-    frozenset(['A', 'G']): 'R',
-    frozenset(['C', 'T']): 'Y',
-    frozenset(['G', 'C']): 'S',
-    frozenset(['A', 'T']): 'W',
-    frozenset(['G', 'T']): 'K',
-    frozenset(['A', 'C']): 'M'
-}
-
 def load_reference(fasta_file):
     ref = {}
     for record in SeqIO.parse(fasta_file, "fasta"):
@@ -35,6 +25,10 @@ def load_variants(vcf_file):
     return variants
 
 def apply_f1_variants(reference, var1, var2):
+    ref1 = reference
+    ref2 = reference.copy()
+
+    # ...
     for chrom in reference:
         if chrom not in var1 and chrom not in var2:
             continue
@@ -53,6 +47,33 @@ def apply_f1_variants(reference, var1, var2):
                 code = IUPAC.get(frozenset([base1, base2]), 'N') #heterozygous; so use IUPAC
                 reference[chrom][pos] = code
     return reference
+
+def crossover_random(reference, var1, var2):
+    ref = reference.copy()
+    for chrom in ref:
+        chrom_len = len(chrom)        
+        # random sample whether a crossover occurs on this chrom
+        if not np.random.binomial(0.5):
+            # randomly no crossover pos as 0 or end of chrom pos
+            if np.random.binomial(0.5):
+                crossover_pos = 0
+            else:
+                crossover_pos = chrom_len
+        else:
+            # random uniform sample position of crossover
+            crossover_pos = np.random.uniform(0, chrom_len, 1)
+            
+        # apply variants from var1 until pos, then apply variants from var2
+        for pos in range(len(ref[chrom])):
+            ref_base = ref[chrom][pos]
+            if pos < crossover_pos:
+                base = var1.get(chrom, {}).get(pos, ref_base)
+            else:
+                base = var2.get(chrom, {}).get(pos, ref_base)
+            ref[chrom][pos] = base
+    return ref
+
+
 
 def write_fasta(reference, output_file):
     with open(output_file, "w") as out:

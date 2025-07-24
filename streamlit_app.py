@@ -91,8 +91,8 @@ st.subheader("3️⃣ Simulate F1 Hybrid Genome")
 
 if all(os.path.exists(f) for f in ["A_thaliana.fna", "sim_thaliana.vcf", "sim_lyrata.vcf"]):
     if st.button("🔬 Generate F1 Hybrid (IUPAC encoding)"):
-        generate_f1_hybrid("A_thaliana.fna", "sim_thaliana.vcf", "sim_lyrata.vcf", "F1_hybrid.fna")
-        st.success("✅ F1 hybrid generated: F1_hybrid.fna")
+        generate_f1_hybrid("A_thaliana.fna", "sim_thaliana.vcf", "sim_lyrata.vcf", "F1_hybrid2.fna")
+        st.success("✅ F1 hybrid generated: F1_hybrid2.fna")
         
         # Prepare fresh BytesIO buffer
         with open("F1_hybrid.fna", "rb") as f:
