@@ -1,6 +1,5 @@
 # distortopia/simulate_hybrid_reads.py
 
-# distortopia/simulate_hybrid_reads.py
 
 import subprocess
 import argparse
