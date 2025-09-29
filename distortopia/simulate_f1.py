@@ -123,7 +123,6 @@ def crossover_random_and_sim_reads(reference, var1, var2):
             pass
     return reads
 
-
 def sample_chrom_position(chrom_lens):
     chrom_starts = np.cumsum([0] + chrom_lens[:-1]).tolist()
     total_len = sum(chrom_lens)
